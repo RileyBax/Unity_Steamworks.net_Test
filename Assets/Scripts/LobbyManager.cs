@@ -2,37 +2,36 @@ using System.Collections;
 using PurrNet;
 using PurrNet.Steam;
 using Steamworks;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 
 public class LobbyManager : MonoBehaviour
 {
 
     public SteamTransport _steamTransport; // WE HAVE TO SET steamTransport.address to the HOST PLAYERS ADDRESS
     public NetworkManager _networkManager; // START HOST AND CLIENT FROM HERE LIKE NORMAL
+    public TextMeshProUGUI logText;
+    public TextMeshProUGUI playerText;
+    private CSteamID lobbyID;
+    private CSteamID ownerID;
 
     // WHAT WE NEED:
     // - HOST PRESS OPEN BUTTON 
     //   -> CREATE LOBBY
     //   -> set steamTransport.address to (CSteamID) SteamMatchmaking.GetLobbyOwner(id) .ToString()
-    //      - this is the lobby code, should be input by join clients.
+    //      - this is the owner id, should only be used on the purrnet steam transport thing.
     // - CLIENT PRESS JOIN BUTTON WITH ID INPUT TEXT
     //   -> set steamTransport.address to (CSteamID) SteamMatchmaking.GetLobbyOwner(id) .ToString()
 
     protected Callback<LobbyEnter_t> m_LobbyEntered;
     protected Callback<LobbyCreated_t> m_LobbyCreated;
-    protected Callback<GameRichPresenceJoinRequested_t> m_JoinRequested;
+    protected Callback<GameLobbyJoinRequested_t> m_JoinRequested;
 
     public void StartHost()
     {
         
         SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, 4);
-
-    }
-
-    public void JoinHost(CSteamID lobbyID)
-    {
-        
-        SteamMatchmaking.JoinLobby(lobbyID);
 
     }
 
@@ -44,7 +43,8 @@ public class LobbyManager : MonoBehaviour
             
             m_LobbyEntered = Callback<LobbyEnter_t>.Create(OnLobbyEntered);
             m_LobbyCreated = Callback<LobbyCreated_t>.Create(OnLobbyCreated);
-            m_JoinRequested = Callback<GameRichPresenceJoinRequested_t>.Create(OnJoinRequested);
+            m_JoinRequested = Callback<GameLobbyJoinRequested_t>.Create(OnJoinRequested);
+            logText.text = "Initialized";
 
         }
 
@@ -53,26 +53,41 @@ public class LobbyManager : MonoBehaviour
     private void OnLobbyEntered(LobbyEnter_t pCallback)
     {
         
-        Debug.Log("Lobby Entered, LobbyID: " + pCallback.m_ulSteamIDLobby);
+        logText.text = "Lobby Entered, LobbyID: " + pCallback.m_ulSteamIDLobby;
 
-        _steamTransport.address = SteamMatchmaking.GetLobbyOwner(new CSteamID(pCallback.m_ulSteamIDLobby)).ToString();
+        playerText.text = SteamMatchmaking.GetNumLobbyMembers(lobbyID).ToString();
 
+        Debug.Log("OwnerID: " + ownerID);
+        Debug.Log("LobbyID: " + lobbyID);
     }
 
     private void OnLobbyCreated(LobbyCreated_t pCallback)
     {
         
-        Debug.Log("Lobby Created, LobbyID: " + pCallback.m_ulSteamIDLobby);
+        logText.text = "Lobby Created, LobbyID: " + pCallback.m_ulSteamIDLobby;
 
+        ownerID = SteamMatchmaking.GetLobbyOwner(new CSteamID(pCallback.m_ulSteamIDLobby));
+
+        _steamTransport.address = ownerID.ToString();
+        
         _networkManager.StartHost();
+
+        lobbyID = new CSteamID(pCallback.m_ulSteamIDLobby);
 
     }
 
-    private void OnJoinRequested(GameRichPresenceJoinRequested_t pCallback)
+    private void OnJoinRequested(GameLobbyJoinRequested_t pCallback)
     {
         
-        SteamMatchmaking.JoinLobby(pCallback.m_steamIDFriend);
-        Debug.Log("Joining Friend: " + pCallback.m_steamIDFriend);
+        SteamMatchmaking.JoinLobby(pCallback.m_steamIDLobby);
+
+        logText.text = "Joining Friend: " + pCallback.m_steamIDFriend;
+
+        _steamTransport.address = pCallback.m_steamIDFriend.ToString();
+        _networkManager.StartClient();
+        
+        lobbyID = pCallback.m_steamIDLobby;
+        ownerID = pCallback.m_steamIDFriend;
 
     }
 
