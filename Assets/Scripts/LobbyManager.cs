@@ -16,6 +16,7 @@ public class LobbyManager : MonoBehaviour
     private CSteamID ownerID;
     public GameObject uiButton;
     public GameObject uiLeaveButton;
+    public GameObject uiJoinButton;
     public GameManager gameManager;
 
     // WHAT WE NEED:
@@ -38,6 +39,18 @@ public class LobbyManager : MonoBehaviour
 
     }
 
+    // THIS FUNCTION IS FOR LOCAL TESTING ONLY!
+    public void JoinHost()
+    {
+        
+        _networkManager.StartClient();
+
+        uiButton.SetActive(false);
+        uiJoinButton.SetActive(false);
+        uiLeaveButton.SetActive(true);
+
+    }
+
     void OnEnable()
     {
 
@@ -52,6 +65,9 @@ public class LobbyManager : MonoBehaviour
 
         }
 
+        // hides the join local button if we are on steam
+        if(!_networkManager.transport == _steamTransport) uiJoinButton.SetActive(true);
+
     }
 
     private void OnLobbyEntered(LobbyEnter_t pCallback)
@@ -63,6 +79,7 @@ public class LobbyManager : MonoBehaviour
         Debug.Log("LobbyID: " + lobbyID);
 
         uiButton.SetActive(false);
+        uiJoinButton.SetActive(false);
         uiLeaveButton.SetActive(true);
 
     }
@@ -131,6 +148,7 @@ public class LobbyManager : MonoBehaviour
         if(_networkManager.isServer) _networkManager.StopServer();
 
         uiLeaveButton.SetActive(false);
+        uiJoinButton.SetActive(true);
         uiButton.SetActive(true); // this should be a function
 
     }

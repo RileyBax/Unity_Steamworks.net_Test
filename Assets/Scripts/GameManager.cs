@@ -1,3 +1,4 @@
+using System.Data.SqlTypes;
 using PurrNet;
 using PurrNet.Modules;
 using Steamworks;
@@ -9,6 +10,8 @@ public class GameManager : NetworkBehaviour
 
     private TextMeshProUGUI playerText;
     private LobbyManager lobbyManager;
+    private int sq = 10;
+    public NetworkTransform cubePrefab;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -31,6 +34,24 @@ public class GameManager : NetworkBehaviour
         base.OnSpawned();
 
         UpdatePlayerCount();
+
+        if (isServer)
+        {
+            
+            for (int x = 0; x < sq; x++)
+            {
+
+                for(int y = 0; y < sq; y++)
+                {
+                    
+                    Instantiate(cubePrefab, new Vector3(x * 2 - sq/2 - 1, 0, y * 2 - sq/2 - 1), Quaternion.identity);
+
+                }
+                
+            }
+
+        }
+
     }
 
     [ObserversRpc(runLocally:true)]
