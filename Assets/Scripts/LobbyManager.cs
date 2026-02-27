@@ -16,6 +16,7 @@ public class LobbyManager : MonoBehaviour
     private CSteamID ownerID;
     public GameObject uiButton;
     public GameObject uiLeaveButton;
+    public GameManager gameManager;
 
     // WHAT WE NEED:
     // - HOST PRESS OPEN BUTTON 
@@ -108,6 +109,9 @@ public class LobbyManager : MonoBehaviour
         
         Debug.Log("Lobby Updated: " + pCallback.m_rgfChatMemberStateChange);
 
+        if(new CSteamID(pCallback.m_ulSteamIDUserChanged) == ownerID) LeaveLobby();
+        else gameManager.UpdatePlayerCount();
+
     }
 
     void OnApplicationQuit()
@@ -120,6 +124,8 @@ public class LobbyManager : MonoBehaviour
     public void LeaveLobby()
     {
         
+        gameManager.SetPlayerText("0");
+
         SteamMatchmaking.LeaveLobby(lobbyID);
         _networkManager.StopClient();
         if(_networkManager.isServer) _networkManager.StopServer();

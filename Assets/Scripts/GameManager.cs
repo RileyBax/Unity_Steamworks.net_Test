@@ -33,25 +33,18 @@ public class GameManager : NetworkBehaviour
         UpdatePlayerCount();
     }
 
-    protected override void OnObserverAdded(PlayerID player)
-    {
-        base.OnObserverAdded(player);
-
-        UpdatePlayerCount();
-    }
-
-    protected override void OnObserverRemoved(PlayerID player)
-    {
-        base.OnObserverRemoved(player);
-
-        UpdatePlayerCount();
-    }
-
     [ObserversRpc(runLocally:true)]
-    private void UpdatePlayerCount()
+    public void UpdatePlayerCount()
     {
 
         playerText.text = lobbyManager.GetPlayerCount().ToString();
+
+    }
+
+    public void SetPlayerText(string t)
+    {
+        
+        playerText.text= t;
 
     }
 

@@ -1378,6 +1378,7 @@ MonoBehaviour:
   logText: {fileID: 195432866}
   uiButton: {fileID: 404716825}
   uiLeaveButton: {fileID: 312757667}
+  gameManager: {fileID: 2078178426}
 --- !u!4 &654677294
 Transform:
   m_ObjectHideFlags: 0
@@ -2014,7 +2015,6 @@ MonoBehaviour:
   _directChildren: []
   _networkRules: {fileID: 0}
   _visitiblityRules: {fileID: 0}
-  playerText: {fileID: 102906184}
 --- !u!4 &2078178427
 Transform:
   m_ObjectHideFlags: 0
