@@ -14,6 +14,8 @@ public class LobbyManager : MonoBehaviour
     public TextMeshProUGUI logText;
     private CSteamID lobbyID;
     private CSteamID ownerID;
+    public GameObject uiButton;
+    public GameObject uiLeaveButton;
 
     // WHAT WE NEED:
     // - HOST PRESS OPEN BUTTON 
@@ -26,6 +28,7 @@ public class LobbyManager : MonoBehaviour
     protected Callback<LobbyEnter_t> m_LobbyEntered;
     protected Callback<LobbyCreated_t> m_LobbyCreated;
     protected Callback<GameLobbyJoinRequested_t> m_JoinRequested;
+    protected Callback<LobbyChatUpdate_t> m_ChatUpdated;
 
     public void StartHost()
     {
@@ -43,6 +46,7 @@ public class LobbyManager : MonoBehaviour
             m_LobbyEntered = Callback<LobbyEnter_t>.Create(OnLobbyEntered);
             m_LobbyCreated = Callback<LobbyCreated_t>.Create(OnLobbyCreated);
             m_JoinRequested = Callback<GameLobbyJoinRequested_t>.Create(OnJoinRequested);
+            m_ChatUpdated = Callback<LobbyChatUpdate_t>.Create(OnChatUpdated);
             logText.text = "Initialized";
 
         }
@@ -56,6 +60,9 @@ public class LobbyManager : MonoBehaviour
 
         Debug.Log("OwnerID: " + ownerID);
         Debug.Log("LobbyID: " + lobbyID);
+
+        uiButton.SetActive(false);
+        uiLeaveButton.SetActive(true);
 
     }
 
@@ -93,6 +100,32 @@ public class LobbyManager : MonoBehaviour
     {
         
         return SteamMatchmaking.GetNumLobbyMembers(lobbyID);
+
+    }
+
+    private void OnChatUpdated(LobbyChatUpdate_t pCallback)
+    {
+        
+        Debug.Log("Lobby Updated: " + pCallback.m_rgfChatMemberStateChange);
+
+    }
+
+    void OnApplicationQuit()
+    {
+        
+        LeaveLobby();
+
+    }
+
+    public void LeaveLobby()
+    {
+        
+        SteamMatchmaking.LeaveLobby(lobbyID);
+        _networkManager.StopClient();
+        if(_networkManager.isServer) _networkManager.StopServer();
+
+        uiLeaveButton.SetActive(false);
+        uiButton.SetActive(true); // this should be a function
 
     }
 

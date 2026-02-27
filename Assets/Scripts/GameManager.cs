@@ -27,6 +27,18 @@ public class GameManager : NetworkBehaviour
         base.OnSpawned();
 
         lobbyManager = GameObject.Find("LobbyManager").GetComponent<LobbyManager>();
+    }
+
+    protected override void OnObserverAdded(PlayerID player)
+    {
+        base.OnObserverAdded(player);
+
+        UpdatePlayerCount();
+    }
+
+    protected override void OnObserverRemoved(PlayerID player)
+    {
+        base.OnObserverRemoved(player);
 
         UpdatePlayerCount();
     }
@@ -35,6 +47,7 @@ public class GameManager : NetworkBehaviour
     private void UpdatePlayerCount()
     {
 
+        Debug.Log("here");
         playerText.text = lobbyManager.GetPlayerCount().ToString();
 
     }
