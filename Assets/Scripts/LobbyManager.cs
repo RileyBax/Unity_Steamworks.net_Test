@@ -1,10 +1,10 @@
 using System.Collections;
 using PurrNet;
+using PurrNet.Modules;
 using PurrNet.Steam;
 using Steamworks;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
 
 public class LobbyManager : MonoBehaviour
 {
@@ -15,6 +15,7 @@ public class LobbyManager : MonoBehaviour
     public TextMeshProUGUI playerText;
     private CSteamID lobbyID;
     private CSteamID ownerID;
+    public GameManager gm;
 
     // WHAT WE NEED:
     // - HOST PRESS OPEN BUTTON 
@@ -55,10 +56,11 @@ public class LobbyManager : MonoBehaviour
         
         logText.text = "Lobby Entered, LobbyID: " + pCallback.m_ulSteamIDLobby;
 
-        playerText.text = SteamMatchmaking.GetNumLobbyMembers(lobbyID).ToString();
-
         Debug.Log("OwnerID: " + ownerID);
         Debug.Log("LobbyID: " + lobbyID);
+
+        playerText.text = SteamMatchmaking.GetNumLobbyMembers(lobbyID).ToString();
+
     }
 
     private void OnLobbyCreated(LobbyCreated_t pCallback)
