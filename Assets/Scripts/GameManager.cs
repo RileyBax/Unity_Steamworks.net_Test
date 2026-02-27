@@ -22,14 +22,6 @@ public class GameManager : NetworkBehaviour
 
     }
 
-    protected override void OnObserverAdded(PlayerID player)
-    {
-        base.OnObserverAdded(player);
-
-        UpdatePlayerCount();
-
-    }
-
     protected override void OnSpawned()
     {
         base.OnSpawned();
@@ -39,6 +31,7 @@ public class GameManager : NetworkBehaviour
         UpdatePlayerCount();
     }
 
+    [ObserversRpc(runLocally:true)]
     private void UpdatePlayerCount()
     {
 
