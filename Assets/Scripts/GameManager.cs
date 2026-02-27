@@ -7,13 +7,17 @@ using UnityEngine;
 public class GameManager : NetworkBehaviour
 {
 
-    public TextMeshProUGUI playerText;
+    private TextMeshProUGUI playerText;
     private LobbyManager lobbyManager;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         
+        playerText = GameObject.Find("Players").GetComponent<TextMeshProUGUI>();
+
+        lobbyManager = GameObject.Find("LobbyManager").GetComponent<LobbyManager>();
+
     }
 
     // Update is called once per frame
@@ -26,7 +30,7 @@ public class GameManager : NetworkBehaviour
     {
         base.OnSpawned();
 
-        lobbyManager = GameObject.Find("LobbyManager").GetComponent<LobbyManager>();
+        UpdatePlayerCount();
     }
 
     protected override void OnObserverAdded(PlayerID player)
@@ -47,7 +51,6 @@ public class GameManager : NetworkBehaviour
     private void UpdatePlayerCount()
     {
 
-        Debug.Log("here");
         playerText.text = lobbyManager.GetPlayerCount().ToString();
 
     }
