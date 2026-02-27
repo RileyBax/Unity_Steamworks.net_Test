@@ -12,10 +12,8 @@ public class LobbyManager : MonoBehaviour
     public SteamTransport _steamTransport; // WE HAVE TO SET steamTransport.address to the HOST PLAYERS ADDRESS
     public NetworkManager _networkManager; // START HOST AND CLIENT FROM HERE LIKE NORMAL
     public TextMeshProUGUI logText;
-    public TextMeshProUGUI playerText;
     private CSteamID lobbyID;
     private CSteamID ownerID;
-    public GameManager gm;
 
     // WHAT WE NEED:
     // - HOST PRESS OPEN BUTTON 
@@ -59,8 +57,6 @@ public class LobbyManager : MonoBehaviour
         Debug.Log("OwnerID: " + ownerID);
         Debug.Log("LobbyID: " + lobbyID);
 
-        playerText.text = SteamMatchmaking.GetNumLobbyMembers(lobbyID).ToString();
-
     }
 
     private void OnLobbyCreated(LobbyCreated_t pCallback)
@@ -90,6 +86,13 @@ public class LobbyManager : MonoBehaviour
         
         lobbyID = pCallback.m_steamIDLobby;
         ownerID = pCallback.m_steamIDFriend;
+
+    }
+
+    public int GetPlayerCount()
+    {
+        
+        return SteamMatchmaking.GetNumLobbyMembers(lobbyID);
 
     }
 

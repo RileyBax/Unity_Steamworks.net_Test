@@ -1096,7 +1096,6 @@ MonoBehaviour:
   _steamTransport: {fileID: 141480704}
   _networkManager: {fileID: 141480705}
   logText: {fileID: 195432866}
-  playerText: {fileID: 102906184}
   gm: {fileID: 2078178426}
 --- !u!4 &654677294
 Transform:
@@ -1381,6 +1380,7 @@ MonoBehaviour:
   _directChildren: []
   _networkRules: {fileID: 0}
   _visitiblityRules: {fileID: 0}
+  playerText: {fileID: 102906184}
 --- !u!4 &2078178427
 Transform:
   m_ObjectHideFlags: 0
