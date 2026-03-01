@@ -2197,6 +2197,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2078178427}
   - component: {fileID: 2078178426}
+  - component: {fileID: 2078178428}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2229,6 +2230,7 @@ MonoBehaviour:
   playerPrefab: {fileID: 4783148418152674240, guid: 91d9d7a90d6e48a4c83cd9a013a4dde1, type: 3}
   playerHeldObjectRef: {fileID: 0}
   hasLoadedMap: 0
+  tileSaveManager: {fileID: 2078178428}
 --- !u!4 &2078178427
 Transform:
   m_ObjectHideFlags: 0
@@ -2244,6 +2246,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2078178428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078178425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4ddff86cfcff334ba7da3482a75d957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

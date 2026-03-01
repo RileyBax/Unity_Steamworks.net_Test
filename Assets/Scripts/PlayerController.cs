@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Composites;
 using UnityEngine.Scripting.APIUpdating;
+using UnityEngine.Tilemaps;
 
 public class PlayerController : NetworkBehaviour
 {
@@ -20,6 +21,7 @@ public class PlayerController : NetworkBehaviour
     private float ySpeed;
     public NetworkTransform holdObj;
     private GameManager gameManager;
+    public SpriteManager spriteManager;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -80,7 +82,9 @@ public class PlayerController : NetworkBehaviour
 
         GameObject localPlayerRef = GameObject.Find("LocalPlayer");
         if(localPlayerRef) {
+            // maybe a function that loads all previous player data?
             transform.position = localPlayerRef.transform.position;
+            spriteManager.SetLookDir(localPlayerRef.GetComponent<PlayerController>().spriteManager.GetLookDir());
             Destroy(localPlayerRef);
         }
 
@@ -150,7 +154,9 @@ public class PlayerController : NetworkBehaviour
     private void GrabObject(NetworkTransform obj)
     {
 
-        if(!gameManager.IsTileHeld(obj.gameObject)){
+        TileScript tempScript = obj.GetComponent<TileScript>();
+
+        if(!tempScript.isHeld){
 
             holdObj = obj;
 
@@ -160,7 +166,7 @@ public class PlayerController : NetworkBehaviour
             else holdObj.GetComponent<BoxCollider>().enabled = false;
             holdObj.gameObject.layer = 2;
 
-            gameManager.SetTileHeld(obj.gameObject, true);
+            tempScript.isHeld = true;
 
         }
 
@@ -169,8 +175,10 @@ public class PlayerController : NetworkBehaviour
     private void PlaceObject(RaycastHit hit)
     {
 
+        TileScript tempScript = holdObj.GetComponent<TileScript>();
+
         // snap to grid pos
-        Vector3 placePos = SnapToGrid(hit.collider.transform.position, 2f) + hit.normal * 2.0f;
+        Vector3 placePos = GridUtil.SnapToGrid(hit.collider.transform.position) + hit.normal * 2.0f;
         holdObj.GetComponent<NetworkTransform>().transform.position = placePos;
 
         if(networkManager) UpdateComponentsRPC(holdObj, true);
@@ -178,7 +186,7 @@ public class PlayerController : NetworkBehaviour
         holdObj.gameObject.layer = 7;
     
 
-        gameManager.SetTileHeld(holdObj.gameObject, false);
+        tempScript.isHeld = false;
 
         holdObj = null;
 
@@ -190,15 +198,6 @@ public class PlayerController : NetworkBehaviour
         
         obj.GetComponent<BoxCollider>().enabled = action;
 
-    }
-
-    private Vector3 SnapToGrid(Vector3 position, float gridSize)
-    {
-        return new Vector3(
-            Mathf.Round(position.x / gridSize) * gridSize,
-            Mathf.Round(position.y / gridSize) * gridSize,
-            Mathf.Round(position.z / gridSize) * gridSize
-        );
     }
 
 }

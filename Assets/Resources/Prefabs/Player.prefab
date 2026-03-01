@@ -89,6 +89,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   holdObj: {fileID: 0}
+  spriteManager: {fileID: 1324519019834420121}
 --- !u!114 &4502905241308416577
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,7 +146,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5611397136055581677}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1.1, z: 0}
   m_LocalScale: {x: 0.5, y: 0.25, z: 0.5}
   m_ConstrainProportionsScale: 0
@@ -237,7 +238,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7994025922933750082}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -316,7 +317,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   spriteImport:
-  - {fileID: 538586169, guid: 88564d9feee97ce42985f9f69caf7c1a, type: 3}
-  - {fileID: -1115645764, guid: 88564d9feee97ce42985f9f69caf7c1a, type: 3}
+  - {fileID: 833547203, guid: f99d7b9d394949b4e9d2e32670f06c49, type: 3}
+  - {fileID: 631804561, guid: f99d7b9d394949b4e9d2e32670f06c49, type: 3}
+  - {fileID: -1458780346, guid: f99d7b9d394949b4e9d2e32670f06c49, type: 3}
+  - {fileID: 1848781611, guid: f99d7b9d394949b4e9d2e32670f06c49, type: 3}
   spriteRenderer: {fileID: 7621681372706845248}
   spriteFace: {fileID: 5611397136055581677}
+  spriteParent: {fileID: 0}
