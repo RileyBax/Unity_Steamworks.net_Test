@@ -66,7 +66,7 @@ public class LobbyManager : MonoBehaviour
         }
 
         // hides the join local button if we are on steam
-        if(!_networkManager.transport == _steamTransport) uiJoinButton.SetActive(true);
+        if(_networkManager.transport != _steamTransport) uiJoinButton.SetActive(true);
 
     }
 
@@ -93,7 +93,7 @@ public class LobbyManager : MonoBehaviour
 
         _steamTransport.address = ownerID.ToString();
         
-        _networkManager.StartHost();
+        if(_networkManager.transport) _networkManager.StartHost();
 
         lobbyID = new CSteamID(pCallback.m_ulSteamIDLobby);
 
@@ -126,7 +126,7 @@ public class LobbyManager : MonoBehaviour
         
         Debug.Log("Lobby Updated: " + pCallback.m_rgfChatMemberStateChange);
 
-        if(new CSteamID(pCallback.m_ulSteamIDUserChanged) == ownerID) LeaveLobby();
+        if(new CSteamID(pCallback.m_ulSteamIDUserChanged) == ownerID) LeaveLobby(); // this doesnt work
         else gameManager.UpdatePlayerCount();
 
     }
@@ -140,7 +140,7 @@ public class LobbyManager : MonoBehaviour
 
     public void LeaveLobby()
     {
-        
+
         gameManager.SetPlayerText("0");
 
         SteamMatchmaking.LeaveLobby(lobbyID);

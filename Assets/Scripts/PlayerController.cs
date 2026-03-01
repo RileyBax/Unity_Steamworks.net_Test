@@ -10,16 +10,16 @@ public class PlayerController : NetworkBehaviour
 {
 
     private float speed = 10.0f;
-    private float fallSpeed = 50.0f;
     private GameObject cineCamObj;
     private CinemachineCamera cineCam;
     private CinemachineInputAxisController cineInput;
     private CharacterController characterController;
     public LayerMask playerLayer;
     public LayerMask cubeLayer;
-    private float jumpHeight = 2.0f;
+    private float jumpHeight = 0.75f;
     private float ySpeed;
-    private GameObject holdObj;
+    public NetworkTransform holdObj;
+    private GameManager gameManager;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -29,18 +29,21 @@ public class PlayerController : NetworkBehaviour
         cineCam = cineCamObj.GetComponent<CinemachineCamera>();
         cineInput = cineCamObj.GetComponent<CinemachineInputAxisController>();
             
-        if (isOwner) cineCam.Follow = transform;
+        if (isOwner ||!networkManager) cineCam.Follow = transform;
 
         cineInput.enabled = false;
 
         characterController = GetComponent<CharacterController>();
+
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+
     }
 
     // Update is called once per frame
     void Update()
     {
         
-        if(!networkManager) return;
+        //if(!networkManager) return;
 
         PlayerMove();
         CamUpdate();
@@ -59,7 +62,7 @@ public class PlayerController : NetworkBehaviour
         bool isGrounded = Physics.CheckSphere(transform.position + new Vector3(0, 0.25f, 0), 0.30f, ~playerLayer);
 
         
-        ySpeed += Physics.gravity.y * Time.deltaTime;
+        if(!isGrounded) ySpeed += Physics.gravity.y / 7.5f * Time.deltaTime;
 
         if(Input.GetKeyDown(KeyCode.Space) && isGrounded) ySpeed = jumpHeight;
 
@@ -74,6 +77,23 @@ public class PlayerController : NetworkBehaviour
         base.OnSpawned();
 
         enabled = isOwner;
+
+        GameObject localPlayerRef = GameObject.Find("LocalPlayer");
+        if(localPlayerRef) {
+            transform.position = localPlayerRef.transform.position;
+            Destroy(localPlayerRef);
+        }
+
+        if(!gameManager) gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        
+        
+
+        if(isServer && !gameManager.hasLoadedMap){
+
+            gameManager.DrawFarm();
+
+            if(gameManager.playerHeldObjectRef) GrabObject(gameManager.playerHeldObjectRef);
+        }
         
     }
 
@@ -91,7 +111,7 @@ public class PlayerController : NetworkBehaviour
     private void ClickUpdate()
     {
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && holdObj)
         {
             
             Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.value);
@@ -99,12 +119,17 @@ public class PlayerController : NetworkBehaviour
             if(Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer))
             {
                 
-                if(!holdObj) GrabObject(hit.collider.gameObject);
-                else PlaceObject(hit);
-
-                Debug.Log(hit.collider);
+                PlaceObject(hit);
 
             }
+
+        }
+        else if (Input.GetMouseButtonDown(1) && !holdObj)
+        {
+            
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.value);
+
+            if(Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer)) GrabObject(hit.collider.GetComponent<NetworkTransform>());
 
         }
 
@@ -122,27 +147,48 @@ public class PlayerController : NetworkBehaviour
 
     }
 
-    private void GrabObject(GameObject obj)
+    private void GrabObject(NetworkTransform obj)
     {
-        
-        holdObj = obj;
-        holdObj.GetComponent<BoxCollider>().enabled = false;
-        holdObj.layer = 2;
+
+        if(!gameManager.IsTileHeld(obj.gameObject)){
+
+            holdObj = obj;
+
+            holdObj.GiveOwnership(localPlayer);
+
+            if(networkManager) UpdateComponentsRPC(holdObj, false);
+            else holdObj.GetComponent<BoxCollider>().enabled = false;
+            holdObj.gameObject.layer = 2;
+
+            gameManager.SetTileHeld(obj.gameObject, true);
+
+        }
 
     }
 
     private void PlaceObject(RaycastHit hit)
     {
-        
-        holdObj.GetComponent<BoxCollider>().enabled = true;
-        holdObj.layer = 7;
 
         // snap to grid pos
         Vector3 placePos = SnapToGrid(hit.collider.transform.position, 2f) + hit.normal * 2.0f;
-        holdObj.transform.position = placePos;
+        holdObj.GetComponent<NetworkTransform>().transform.position = placePos;
+
+        if(networkManager) UpdateComponentsRPC(holdObj, true);
+        else holdObj.GetComponent<BoxCollider>().enabled = true;
+        holdObj.gameObject.layer = 7;
     
 
+        gameManager.SetTileHeld(holdObj.gameObject, false);
+
         holdObj = null;
+
+    }
+
+    [ObserversRpc(runLocally:true, bufferLast:true)]
+    private void UpdateComponentsRPC(NetworkTransform obj, bool action)
+    {
+        
+        obj.GetComponent<BoxCollider>().enabled = action;
 
     }
 

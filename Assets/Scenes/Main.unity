@@ -154,7 +154,7 @@ MonoBehaviour:
   m_BlockingObjects: 0
   m_BlockingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 0
 --- !u!114 &59622937
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -187,9 +187,9 @@ Canvas:
   m_GameObject: {fileID: 59622935}
   m_Enabled: 1
   serializedVersion: 3
-  m_RenderMode: 1
+  m_RenderMode: 0
   m_Camera: {fileID: 330585545}
-  m_PlaneDistance: 3
+  m_PlaneDistance: 1
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
   m_OverrideSorting: 0
@@ -533,6 +533,7 @@ MonoBehaviour:
   _playerPrefab: {fileID: 4783148418152674240, guid: 91d9d7a90d6e48a4c83cd9a013a4dde1, type: 3}
   _ignoreNetworkRules: 0
   spawnPoints: []
+  oldPlayer: {fileID: 0}
 --- !u!114 &141480709
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1500,6 +1501,7 @@ GameObject:
   - component: {fileID: 1307305377}
   - component: {fileID: 1307305376}
   - component: {fileID: 1307305379}
+  - component: {fileID: 1307305380}
   - component: {fileID: 1307305375}
   m_Layer: 0
   m_Name: CinemachineCamera
@@ -1578,7 +1580,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b5d7c088409d9a40b7b09aa707777f8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineOrbitalFollow
-  TargetOffset: {x: 0, y: 0, z: 0}
+  TargetOffset: {x: 0, y: 2, z: 0}
   TrackerSettings:
     BindingMode: 4
     PositionDamping: {x: 0, y: 0, z: 0}
@@ -1699,7 +1701,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1e8b78ac948f05a46a6d8339a503172b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineHardLookAt
-  LookAtOffset: {x: 0, y: 1, z: 0}
+  LookAtOffset: {x: 0, y: 2, z: 0}
+--- !u!114 &1307305380
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1307305374}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca7de3aefa901374ba29464584a3109a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Cinemachine::Unity.Cinemachine.CinemachineDecollider
+  CameraRadius: 0.4
+  Decollision:
+    Enabled: 0
+    ObstacleLayers:
+      serializedVersion: 2
+      m_Bits: 1
+    UseFollowTarget:
+      Enabled: 0
+      YOffset: 0
+    Damping: 0
+    SmoothingTime: 0
+  TerrainResolution:
+    Enabled: 1
+    TerrainLayers:
+      serializedVersion: 2
+      m_Bits: 4294967295
+    MaximumRaycast: 10
+    Damping: 0
 --- !u!1 &1575702297
 GameObject:
   m_ObjectHideFlags: 0
@@ -1901,7 +1933,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1820951927
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2194,6 +2226,9 @@ MonoBehaviour:
   _networkRules: {fileID: 0}
   _visitiblityRules: {fileID: 0}
   cubePrefab: {fileID: 6014045614782758895, guid: 19a85dbd158686e42b3a8a88ee054855, type: 3}
+  playerPrefab: {fileID: 4783148418152674240, guid: 91d9d7a90d6e48a4c83cd9a013a4dde1, type: 3}
+  playerHeldObjectRef: {fileID: 0}
+  hasLoadedMap: 0
 --- !u!4 &2078178427
 Transform:
   m_ObjectHideFlags: 0
