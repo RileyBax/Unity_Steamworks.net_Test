@@ -10,7 +10,6 @@ public class SpriteManager : NetworkBehaviour
     //private Sprite[,] spriteMap = new Sprite[4,4];
     private Vector3 prevPos;
     public SpriteRenderer spriteRenderer;
-    public GameObject spriteFace; // TEMP
     private Vector3 lookDir;
 
     void Start()
@@ -23,7 +22,6 @@ public class SpriteManager : NetworkBehaviour
     {
 
         transform.LookAt(Camera.main.transform.position);
-        spriteFace.transform.LookAt(Camera.main.transform.position);
 
         // check camera angle relative to player, change sprite
         Vector3 camDir = Camera.main.transform.position - transform.parent.position;
@@ -47,17 +45,7 @@ public class SpriteManager : NetworkBehaviour
         int index = Mathf.RoundToInt(angle / 45f) % 8;
         
 
-        if(index == 0 || index == 4) spriteRenderer.sprite = spriteImport[0];
-        else if(index == 6 || index == 2) spriteRenderer.sprite = spriteImport[1];
-        else if(index == 5 || index == 3) spriteRenderer.sprite = spriteImport[2];
-        else if(index == 7 || index == 1) spriteRenderer.sprite = spriteImport[3];
-
-
-        if(index == 2 || index == 3 || index == 1) spriteRenderer.flipX = false;
-        if(index == 6 || index == 5 || index == 7) spriteRenderer.flipX = true;
-
-        if(index == 4) spriteFace.SetActive(false);
-        else spriteFace.SetActive(true);
+        spriteRenderer.sprite = spriteImport[index];
 
         if(networkManager) UpdateLookDirRPC();
         else UpdateLookDir();
