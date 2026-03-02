@@ -497,7 +497,7 @@ MonoBehaviour:
   _transport: {fileID: 141480704}
   _networkPrefabs: {fileID: 11400000, guid: 825aac2cfe86075409614ce9496cbac9, type: 2}
   _networkAssets: {fileID: 0}
-  _networkRules: {fileID: 11400000, guid: d8799083b96579a42b8b2d03e4ceae98, type: 2}
+  _networkRules: {fileID: 11400000, guid: bfb9fda8dac7fc74282f9d0fc31a8fe4, type: 2}
   _visibilityRules: {fileID: 11400000, guid: 8f014a5bd8dc68646a2a3c0b18c5bbd8, type: 2}
   _authenticator: {fileID: 0}
   _tickRate: 20
@@ -2227,8 +2227,10 @@ MonoBehaviour:
   _networkRules: {fileID: 0}
   _visitiblityRules: {fileID: 0}
   cubePrefab: {fileID: 6014045614782758895, guid: 19a85dbd158686e42b3a8a88ee054855, type: 3}
+  itemPrefab: {fileID: 3674157908396952047, guid: 485531f66bfaf734da0bc8a8e24f695e, type: 3}
   playerPrefab: {fileID: 4783148418152674240, guid: 91d9d7a90d6e48a4c83cd9a013a4dde1, type: 3}
   playerHeldObjectRef: {fileID: 0}
+  hasLoadedOfflineMap: 0
   hasLoadedMap: 0
   tileSaveManager: {fileID: 2078178428}
 --- !u!4 &2078178427

@@ -148,7 +148,7 @@ public class LobbyManager : MonoBehaviour
         if(_networkManager.isServer) _networkManager.StopServer();
 
         uiLeaveButton.SetActive(false);
-        uiJoinButton.SetActive(true);
+        if(_networkManager.transport != _steamTransport) uiJoinButton.SetActive(true);
         uiButton.SetActive(true); // this should be a function
 
     }

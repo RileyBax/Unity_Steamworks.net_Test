@@ -1,16 +1,12 @@
-using NUnit.Framework;
+using PurrNet;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
-public class TileScript : MonoBehaviour
+public class TileScript : HoldableObject
 {
     [SerializeField] private int id;
-    private BoxCollider col;
-    public bool isHeld;
-
-    void Start()
+    void Awake()
     {
-        col = GetComponent<BoxCollider>();
+        col = GetComponent<MeshCollider>();
         isHeld = false;
     }
 
@@ -22,6 +18,23 @@ public class TileScript : MonoBehaviour
     public int GetID()
     {
         return id;
+    }
+
+    public override void OnPickup(GameObject player)
+    {
+        
+        isHeld = true;
+
+    }
+
+    public override void OnPlace(RaycastHit hit)
+    {
+        
+        isHeld = false;
+
+        Vector3 placePos = GridUtil.SnapToGrid(hit.collider.transform.position) + hit.normal * 2.0f;
+        transform.position = placePos;
+
     }
     
 }

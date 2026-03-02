@@ -154,19 +154,17 @@ public class PlayerController : NetworkBehaviour
     private void GrabObject(NetworkTransform obj)
     {
 
-        TileScript tempScript = obj.GetComponent<TileScript>();
+        HoldableObject holdable = obj.GetComponent<HoldableObject>();
 
-        if(!tempScript.isHeld){
+        if(!holdable.isHeld){
 
             holdObj = obj;
-
-            holdObj.GiveOwnership(localPlayer);
+            holdObj.GetComponent<NetworkTransform>().GiveOwnership(localPlayer);
 
             if(networkManager) UpdateComponentsRPC(holdObj, false);
-            else holdObj.GetComponent<BoxCollider>().enabled = false;
-            holdObj.gameObject.layer = 2;
+            else holdable.col.enabled = false;
 
-            tempScript.isHeld = true;
+            holdable.OnPickup(gameObject);
 
         }
 
@@ -175,18 +173,15 @@ public class PlayerController : NetworkBehaviour
     private void PlaceObject(RaycastHit hit)
     {
 
-        TileScript tempScript = holdObj.GetComponent<TileScript>();
-
+        HoldableObject holdable = holdObj.GetComponent<HoldableObject>();
         // snap to grid pos
-        Vector3 placePos = GridUtil.SnapToGrid(hit.collider.transform.position) + hit.normal * 2.0f;
-        holdObj.GetComponent<NetworkTransform>().transform.position = placePos;
+        holdable.OnPlace(hit);
 
         if(networkManager) UpdateComponentsRPC(holdObj, true);
-        else holdObj.GetComponent<BoxCollider>().enabled = true;
-        holdObj.gameObject.layer = 7;
+        else holdable.col.enabled = true;
     
 
-        tempScript.isHeld = false;
+        
 
         holdObj = null;
 
@@ -195,8 +190,9 @@ public class PlayerController : NetworkBehaviour
     [ObserversRpc(runLocally:true, bufferLast:true)]
     private void UpdateComponentsRPC(NetworkTransform obj, bool action)
     {
-        
-        obj.GetComponent<BoxCollider>().enabled = action;
+
+        Debug.Log(obj.GetComponent<HoldableObject>().col);
+        if(obj) obj.GetComponent<HoldableObject>().col.enabled = action;
 
     }
 

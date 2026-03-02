@@ -39,7 +39,7 @@ public class TileSaveManager : NetworkBehaviour
             TileData data = new TileData
             {
                 id = tile.GetID(),
-                position = tile.transform.position,
+                position = GridUtil.SnapToGrid(tile.transform.position),
             };
 
             dataList.tiles.Add(data);

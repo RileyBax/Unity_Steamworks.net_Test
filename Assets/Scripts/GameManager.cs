@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using PurrNet;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GameManager : NetworkBehaviour
@@ -11,20 +12,33 @@ public class GameManager : NetworkBehaviour
     private LobbyManager lobbyManager;
     private int sq = 10;
     public NetworkTransform cubePrefab;
+    public NetworkTransform itemPrefab;
     public GameObject playerPrefab;
-    private List<TileScript> mapList = new List<TileScript>();
     private GameObject playerObject;
     private Vector3 playerSpawnPos;
     public NetworkTransform playerHeldObjectRef;
+    public bool hasLoadedOfflineMap = false;
     public bool hasLoadedMap = false;
     public TileSaveManager tileSaveManager;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+
         LoadLocalGame();
         hasLoadedMap = false;
+
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.L))
+        {
+
+            if (networkManager) Instantiate(itemPrefab);
+            else UnityProxy.InstantiateDirectly(itemPrefab);
+
+        }
 
     }
 
@@ -34,19 +48,17 @@ public class GameManager : NetworkBehaviour
 
         UpdatePlayerCount();
 
-
-
         // i dont like this
         if (!isServer)
         {
-            
+
             DestroyFarm();
 
         }
 
     }
 
-    [ObserversRpc(runLocally:true)]
+    [ObserversRpc(runLocally: true)]
     public void UpdatePlayerCount()
     {
 
@@ -56,28 +68,29 @@ public class GameManager : NetworkBehaviour
 
     public void SetPlayerText(string t)
     {
-        
-        playerText.text= t;
+
+        playerText.text = t;
 
     }
 
     public void DrawFarm()
     {
-    
 
-        if(mapList.Count == 0){
+
+        if (!hasLoadedOfflineMap)
+        {
 
             List<TileData> tileDataList = tileSaveManager.LoadTiles();
 
-            if(tileDataList != null){
+            if (tileDataList != null)
+            {
 
-                foreach(TileData tileData in tileDataList)
+                foreach (TileData tileData in tileDataList)
                 {
-                    
+
                     GameObject tile = UnityProxy.InstantiateDirectly(cubePrefab.gameObject, tileData.position, Quaternion.identity);
                     TileScript tileScript = tile.GetComponent<TileScript>();
                     tileScript.SetTileData(0);
-                    mapList.Add(tileScript);
 
                 }
 
@@ -85,16 +98,15 @@ public class GameManager : NetworkBehaviour
             else
             {
 
-                for (int x = -sq/2; x < sq-sq/2; x++)
+                for (int x = -sq / 2; x < sq - sq / 2; x++)
                 {
 
-                    for (int z = -sq/2; z < sq-sq/2; z++)
+                    for (int z = -sq / 2; z < sq - sq / 2; z++)
                     {
-                        
-                        GameObject tile = UnityProxy.InstantiateDirectly(cubePrefab.gameObject, GridUtil.SnapToGrid(new Vector3(x*2, -2, z*2)), Quaternion.identity);
+
+                        GameObject tile = UnityProxy.InstantiateDirectly(cubePrefab.gameObject, GridUtil.SnapToGrid(new Vector3(x * 2, -2, z * 2)), Quaternion.identity);
                         TileScript tileScript = tile.GetComponent<TileScript>();
                         tileScript.SetTileData(0);
-                        mapList.Add(tileScript);
 
                     }
 
@@ -102,22 +114,39 @@ public class GameManager : NetworkBehaviour
 
             }
 
+            hasLoadedOfflineMap = true;
+
         }
         else
         {
 
             PlayerController localPlayerScript = playerObject.GetComponent<PlayerController>();
 
-            for (int i = 0; i < mapList.Count; i++) {
-                NetworkTransform newTile = Instantiate(cubePrefab, mapList[i].gameObject.transform.position, Quaternion.identity);
+            NetworkTransform[] mapArray = FindObjectsByType<NetworkTransform>(FindObjectsSortMode.None);
 
-                if(localPlayerScript.holdObj && localPlayerScript.holdObj.gameObject == mapList[i].gameObject) {
-                    playerHeldObjectRef = newTile;
-                    mapList[i].isHeld = false; // jank
+            for (int i = 0; i < mapArray.Length; i++)
+            {
+
+                if (mapArray[i].GetComponent<HoldableObject>() != null)
+                {
+
+                    HoldableObject objHoldable = mapArray[i].GetComponent<HoldableObject>();
+
+                    NetworkTransform newObject = null; // there should be something better...
+
+                    if(objHoldable.GetComponent<TileScript>()) newObject = Instantiate(cubePrefab, mapArray[i].gameObject.transform.position, Quaternion.identity);
+                    else if(objHoldable.GetComponent<ItemScript>()) newObject = Instantiate(itemPrefab, mapArray[i].gameObject.transform.position, Quaternion.identity);
+
+                    if (localPlayerScript.holdObj && localPlayerScript.holdObj.gameObject == mapArray[i].gameObject)
+                    {
+                        playerHeldObjectRef = newObject;
+                        objHoldable.isHeld = false; // jank
+                    }
+
+                    Destroy(mapArray[i].gameObject);
+
                 }
 
-                Destroy(mapList[i].gameObject);
-                mapList[i] = newTile.GetComponent<TileScript>();
             }
 
             hasLoadedMap = true;
@@ -134,10 +163,18 @@ public class GameManager : NetworkBehaviour
 
     private void DestroyFarm()
     {
-        
-        foreach(TileScript tile in mapList) {
 
-            Destroy(tile.gameObject);
+        NetworkTransform[] mapArray = FindObjectsByType<NetworkTransform>(FindObjectsSortMode.None);
+
+        for (int i = 0; i < mapArray.Length; i++)
+        {
+
+            if (mapArray[i].GetComponent<HoldableObject>() != null && (mapArray[i].isOwner || !mapArray[i].isSpawned))
+            {
+
+                Destroy(mapArray[i]);
+
+            }
 
         }
 
@@ -145,10 +182,8 @@ public class GameManager : NetworkBehaviour
 
     public void LoadLocalGame()
     {
-        
-        // this should call on startup and game leave
-        // needs a json save file of the world?
-        mapList = new List<TileScript>();
+
+        hasLoadedOfflineMap = false;
 
         playerText = GameObject.Find("Players").GetComponent<TextMeshProUGUI>();
 
@@ -157,7 +192,7 @@ public class GameManager : NetworkBehaviour
         playerObject = UnityProxy.InstantiateDirectly(playerPrefab);
         playerObject.name = "LocalPlayer";
 
-        
+
 
         DrawFarm();
 
@@ -169,6 +204,32 @@ public class GameManager : NetworkBehaviour
         // add a uiscript with a flip button vis
         hasLoadedMap = false;
         LoadLocalGame();
+    }
+
+    protected override void OnObserverRemoved(PlayerID player)
+    {
+        base.OnObserverRemoved(player);
+
+        NetworkTransform[] temp = FindObjectsByType<NetworkTransform>(FindObjectsSortMode.None);
+
+        int count = 0;
+        for (int i = 0; i < temp.Length; i++)
+        {
+
+            if (temp[i].owner == player && temp[i].GetComponent<HoldableObject>() != null)
+            {
+
+                // could store a reference to the prefab in the object script to access -> spawn new
+                if (temp[i].GetComponent<TileScript>()) Instantiate(cubePrefab, GridUtil.SnapToGrid(temp[i].transform.position), temp[i].transform.rotation);
+                if (temp[i].GetComponent<ItemScript>()) Instantiate(itemPrefab, temp[i].transform.position, temp[i].transform.rotation);
+
+                count++;
+
+            }
+
+        }
+        Debug.Log(count + " objects replaced");
+
     }
 
 }
