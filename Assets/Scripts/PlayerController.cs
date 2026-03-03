@@ -145,7 +145,7 @@ public class PlayerController : NetworkBehaviour
 
         HoldableObject holdable = obj.GetComponent<HoldableObject>();
 
-        if(!holdable.isHeld && holdable.id != 0){
+        if(!holdable.isHeld && (holdable.id != 0 || holdable.type == EInteractable.Type.Item)){
 
             holdObj = obj;
             holdObj.GetComponent<NetworkTransform>().GiveOwnership(localPlayer);
