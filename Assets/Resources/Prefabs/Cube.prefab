@@ -136,8 +136,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 367070fafcda98c43b7c0b8e6f49df93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  prefab: {fileID: 6014045614782758895}
-  id: 0
+  cubeLayer:
+    serializedVersion: 2
+    m_Bits: 384
+  mr: {fileID: 0}
+  objectAssetData: {fileID: 11400000, guid: 4901e95d32dc10e4bad91d9df012805e, type: 2}
 --- !u!64 &5494923482504378077
 MeshCollider:
   m_ObjectHideFlags: 0

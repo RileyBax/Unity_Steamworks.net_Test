@@ -1,18 +1,39 @@
+using System;
 using PurrNet;
 using UnityEngine;
 
 public class TileScript : HoldableObject
 {
-    [SerializeField] private int id;
+
+    public LayerMask cubeLayer;
+    private MeshRenderer mr;
+    public ObjectAssetData objectAssetData;
+
     void Awake()
     {
         col = GetComponent<MeshCollider>();
         isHeld = false;
+        type = EInteractable.Type.Tile;
+        holdHeight = 2.0f;
+        mr = GetComponent<MeshRenderer>();
+        SetTileData((EInteractable.TileTexture) id);
     }
 
-    public void SetTileData(int id)
+    [ObserversRpc(bufferLast:true)]
+    public void SetTileDataRPC(EInteractable.TileTexture ETexture)
     {
-        this.id = id;
+        
+        id = (int) ETexture;
+        mr.material = objectAssetData.tileMatList[(int) ETexture];
+
+    }
+
+    public void SetTileData(EInteractable.TileTexture ETexture)
+    {
+        
+        id = (int) ETexture;
+        mr.material = objectAssetData.tileMatList[(int) ETexture];
+
     }
 
     public int GetID()
@@ -27,14 +48,23 @@ public class TileScript : HoldableObject
 
     }
 
-    public override void OnPlace(RaycastHit hit)
+    public override bool OnPlace(Ray ray)
     {
         
         isHeld = false;
 
-        Vector3 placePos = GridUtil.SnapToGrid(hit.collider.transform.position) + hit.normal * 2.0f;
-        transform.position = placePos;
+        if(Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer))
+        {
+                
+            Vector3 placePos = GridUtil.SnapToGrid(hit.collider.transform.position) + hit.normal * 2.0f;
+            transform.position = placePos;
+
+            return true;
+
+        }
+
+        return false;
 
     }
-    
+
 }

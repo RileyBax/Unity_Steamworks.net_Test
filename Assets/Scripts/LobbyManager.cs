@@ -35,6 +35,8 @@ public class LobbyManager : MonoBehaviour
     public void StartHost()
     {
         
+        gameManager.tileSaveManager.SaveGame();
+
         SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, 4);
 
     }
@@ -43,6 +45,8 @@ public class LobbyManager : MonoBehaviour
     public void JoinHost()
     {
         
+        gameManager.tileSaveManager.SaveGame();
+
         _networkManager.StartClient();
 
         uiButton.SetActive(false);

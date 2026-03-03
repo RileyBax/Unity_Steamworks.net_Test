@@ -19,33 +19,34 @@ public class PlayerController : NetworkBehaviour
     public LayerMask cubeLayer;
     private float jumpHeight = 0.75f;
     private float ySpeed;
-    public NetworkTransform holdObj;
+    public GameObject holdObj;
     private GameManager gameManager;
     public SpriteManager spriteManager;
+    public bool wasServer = false;
+    private float holdObjHeight = 2.0f;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
 
+        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        gameManager.gameSave = gameManager.tileSaveManager.LoadGame();
+
         cineCamObj = GameObject.Find("CinemachineCamera");
         cineCam = cineCamObj.GetComponent<CinemachineCamera>();
         cineInput = cineCamObj.GetComponent<CinemachineInputAxisController>();
             
-        if (isOwner ||!networkManager) cineCam.Follow = transform;
+        if (isOwner || !networkManager) cineCam.Follow = transform;
 
         cineInput.enabled = false;
 
         characterController = GetComponent<CharacterController>();
-
-        gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
 
     }
 
     // Update is called once per frame
     void Update()
     {
-        
-        //if(!networkManager) return;
 
         PlayerMove();
         CamUpdate();
@@ -72,6 +73,8 @@ public class PlayerController : NetworkBehaviour
 
         characterController.Move(moveDir * Time.deltaTime * speed);
 
+        if(transform.position.y < -100) transform.position = new Vector3(0, 10.0f, 0);
+
     }
 
     protected override void OnSpawned()
@@ -80,23 +83,14 @@ public class PlayerController : NetworkBehaviour
 
         enabled = isOwner;
 
-        GameObject localPlayerRef = GameObject.Find("LocalPlayer");
-        if(localPlayerRef) {
-            // maybe a function that loads all previous player data?
-            transform.position = localPlayerRef.transform.position;
-            spriteManager.SetLookDir(localPlayerRef.GetComponent<PlayerController>().spriteManager.GetLookDir());
-            Destroy(localPlayerRef);
-        }
-
         if(!gameManager) gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        
-        
+
+        GameObject localPlayerRef = GameObject.Find("LocalPlayer");
+        if(localPlayerRef) Destroy(localPlayerRef);
 
         if(isServer && !gameManager.hasLoadedMap){
-
-            gameManager.DrawFarm();
-
-            if(gameManager.playerHeldObjectRef) GrabObject(gameManager.playerHeldObjectRef);
+            wasServer = true;
+            gameManager.DrawFarm(true);
         }
         
     }
@@ -120,12 +114,7 @@ public class PlayerController : NetworkBehaviour
             
             Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.value);
 
-            if(Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer))
-            {
-                
-                PlaceObject(hit);
-
-            }
+            PlaceObject(ray);
 
         }
         else if (Input.GetMouseButtonDown(1) && !holdObj)
@@ -133,7 +122,7 @@ public class PlayerController : NetworkBehaviour
             
             Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.value);
 
-            if(Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer)) GrabObject(hit.collider.GetComponent<NetworkTransform>());
+            if(Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer)) GrabObject(hit.collider.gameObject);
 
         }
 
@@ -145,45 +134,47 @@ public class PlayerController : NetworkBehaviour
         if (holdObj)
         {
             
-            holdObj.transform.position = transform.position + new Vector3(0, 2.0f, 0);
+            holdObj.transform.position = transform.position + new Vector3(0, holdObjHeight, 0);
 
         }
 
     }
 
-    private void GrabObject(NetworkTransform obj)
+    public void GrabObject(GameObject obj)
     {
 
         HoldableObject holdable = obj.GetComponent<HoldableObject>();
 
-        if(!holdable.isHeld){
+        if(!holdable.isHeld && holdable.id != 0){
 
             holdObj = obj;
             holdObj.GetComponent<NetworkTransform>().GiveOwnership(localPlayer);
 
-            if(networkManager) UpdateComponentsRPC(holdObj, false);
+            if(networkManager) UpdateComponentsRPC(holdObj.GetComponent<NetworkTransform>(), false);
             else holdable.col.enabled = false;
 
+            holdObjHeight = holdObj.GetComponent<HoldableObject>().holdHeight;
             holdable.OnPickup(gameObject);
 
         }
 
     }
 
-    private void PlaceObject(RaycastHit hit)
+    private void PlaceObject(Ray ray)
     {
 
         HoldableObject holdable = holdObj.GetComponent<HoldableObject>();
-        // snap to grid pos
-        holdable.OnPlace(hit);
+        
+        if (holdable.OnPlace(ray))
+        {
 
-        if(networkManager) UpdateComponentsRPC(holdObj, true);
-        else holdable.col.enabled = true;
-    
+            if(networkManager) UpdateComponentsRPC(holdObj.GetComponent<NetworkTransform>(), true);
+            else holdable.col.enabled = true;
+
+            holdObj = null;
+        }
 
         
-
-        holdObj = null;
 
     }
 
@@ -191,7 +182,6 @@ public class PlayerController : NetworkBehaviour
     private void UpdateComponentsRPC(NetworkTransform obj, bool action)
     {
 
-        Debug.Log(obj.GetComponent<HoldableObject>().col);
         if(obj) obj.GetComponent<HoldableObject>().col.enabled = action;
 
     }

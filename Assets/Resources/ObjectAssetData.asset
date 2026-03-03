@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25a29302403e5714cab0a9bc1782091e, type: 3}
+  m_Name: ObjectAssetData
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectAssetData1
+  tileMatList:
+  - {fileID: 2100000, guid: 5fd643595cf2fb044aa1b762338ca930, type: 2}
+  - {fileID: 2100000, guid: 4cd4f4444fb29b34197c7d1e204c9e86, type: 2}
+  itemMatList: []
