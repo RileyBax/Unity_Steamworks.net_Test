@@ -26,13 +26,14 @@ public class PlayerController : NetworkBehaviour
     private float holdObjHeight = 2.0f;
 
     // TODO:
+    // hold to pickup tile? line renderer circle around mouse
     // holdObj change to List<NetworkTransform>
     // - can carry a list of items OR a list of tiles, cannot mix them
     // - - store a EInteractable.type of list variable, when list length is 0, type = null?
     // - make the tile smaller when isheld and rotate it?, do this inside tile script
     // - spiral helds items x and z instead of stack
     // texture type 0 shouldnt be unholdable
-    // Try remove middle mouse button, always have camera locked
+    // Try remove middle mouse button, always have camera locked?
     // - make sure left and right click register at center of screen
     // - - add crosshair?
     // change player sprites to 3d cube object
@@ -58,7 +59,7 @@ public class PlayerController : NetworkBehaviour
     // ISSUES:
     // how do we get the seeds?
     // - plants give new seeds on successful harvest
-    // - - plant types: wheat, corn, potato, grass, weeds, tomato
+    // - - plant types: wheat, corn, potato, grass, weeds, tomato, carrot
     // - trader
     // how do we get more blocks?
     // - compost for dirt?
