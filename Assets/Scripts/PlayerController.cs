@@ -29,16 +29,19 @@ public class PlayerController : NetworkBehaviour
     // holdObj change to List<NetworkTransform>
     // - can carry a list of items OR a list of tiles, cannot mix them
     // - - store a EInteractable.type of list variable, when list length is 0, type = null?
-    // - make the tile smaller when isheld, do this inside tile script
+    // - make the tile smaller when isheld and rotate it?, do this inside tile script
+    // - spiral helds items x and z instead of stack
+    // texture type 0 shouldnt be unholdable
     // Try remove middle mouse button, always have camera locked
     // - make sure left and right click register at center of screen
+    // - - add crosshair?
     // change player sprites to 3d cube object
     // add name tag to players with steam name
     // - add it to prefab, check if isOwner, hide prefab from self
     // stronger gravity, less floaty
-    // items should be rigidbodies stronger throw should be fun
+    // items should have stronger throw should be fun, maybe not rigidbodies, remove collision from player
     // planted seeds dont need to be like minecraft
-    // - throw seeds in a spread (holdObjList.Length % maxThrowAmount), one stalk grows out of each
+    // - throw seeds in a spread (holdObjList.Length % maxThrowAmount), one sprite stalk grows out of each
     // - - oncollisionenter, physics cast area for tile layermask, if tile.type == dirt, plant
     // - - - plant() add seed to tile, instantiate produce object, start growing.
     // - - - must be certain distance from other planted seeds on that tile.
@@ -60,7 +63,9 @@ public class PlayerController : NetworkBehaviour
     // how do we get more blocks?
     // - compost for dirt?
     // - - place harvest/weeds/failed harvest in a container?
-    // trader? - big hand
+    // - trader
+    // - - maybe miniture version of block?
+    // how does the trader work? - big hand
     // - arrive once a day
     // - holds a bag that can be filled with produce
     // - gives back random items depending on value of items given
@@ -69,7 +74,22 @@ public class PlayerController : NetworkBehaviour
     // - sandbox, no death/restart/game end, continuous, incremental, need certain types of produce for upgrades.
     // - roguelike, daily quota, game end on not met, incremental upgrades.
     // upgrades?
-    // - yea
+    // - throw amount, stack height, harvest quantity.
+    // how do we store many items?
+    // - just make a big pile of them?
+    // how do we pick up many items?
+    // - hold left click hoovers them up?
+    // whats stopping the player from winning? we need some kind of antagonist/enemy/force.
+    // - plant disease
+    // - growth rate
+    // - pests
+    // - - rabbits and stuff?
+    // - - can pick them up?
+    // - weather effects?
+    // - - strong wind, rain
+    // - we need to have another mechanic, more things to do
+    // - - building?
+    // - - - why
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
