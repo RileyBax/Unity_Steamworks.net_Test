@@ -1,7 +1,5 @@
 using System.IO;
 using UnityEngine;
-using System.Linq;
-using System.Collections.Generic;
 using PurrNet;
 
 public class TileSaveManager : NetworkBehaviour
@@ -24,40 +22,70 @@ public class TileSaveManager : NetworkBehaviour
     private void OnApplicationQuit()
     {
 
-        if(!networkManager || wasServer) SaveTiles();
+        if(!networkManager || wasServer) SaveGame();
 
     }
 
-    public void SaveTiles()
+    public void SaveGame()
     {
-        TileScript[] sceneTiles = FindObjectsByType<TileScript>(FindObjectsSortMode.None);
+        NetworkTransform[] sceneObjects = FindObjectsByType<NetworkTransform>(FindObjectsSortMode.None);
 
-        TileDataList dataList = new TileDataList();
+        SaveData dataList = new SaveData();
 
-        foreach (var tile in sceneTiles)
+        foreach (var IObject in sceneObjects)
         {
-            TileData data = new TileData
-            {
-                id = tile.GetID(),
-                position = tile.transform.position,
-            };
+            if(IObject.GetComponent<HoldableObject>()){
 
-            dataList.tiles.Add(data);
+                HoldableObject holdableObject = IObject.GetComponent<HoldableObject>();
+
+                Vector3 setPos = IObject.transform.position;
+
+                if(holdableObject.type == EInteractable.Type.Tile) setPos = GridUtil.SnapToGrid(IObject.transform.position);
+
+                ObjectData data = new ObjectData
+                {
+                    id = holdableObject.id,
+                    position = setPos,
+                    rotation = holdableObject.transform.rotation,
+                    type = holdableObject.type,
+                    isHeld = holdableObject.isHeld,
+                };
+                
+                if(holdableObject.isHeld) Debug.Log("saved held obj");
+
+                dataList.objects.Add(data);
+
+            }
+            else if(IObject.GetComponent<PlayerController>() && IObject.GetComponent<PlayerController>().wasServer || IObject.gameObject.name == "LocalPlayer")
+            {
+
+                PlayerData playerData = new PlayerData
+                {
+                    position = IObject.transform.position,
+                    rotation = IObject.transform.rotation,
+                };
+                
+                Debug.Log("saved pos: " + IObject.transform.position + ", " + IObject.transform.rotation);
+
+                dataList.player = playerData;
+
+            }
         }
 
         string json = JsonUtility.ToJson(dataList, true);
+        
         File.WriteAllText(filePath, json);
 
         Debug.Log("Tiles saved to: " + filePath);
     }
 
-    public List<TileData> LoadTiles()
+    public SaveData LoadGame()
     {
         if (!File.Exists(filePath)) return null;
 
         string json = File.ReadAllText(filePath);
-        TileDataList dataList = JsonUtility.FromJson<TileDataList>(json);
+        SaveData dataList = JsonUtility.FromJson<SaveData>(json);
 
-        return dataList.tiles;
+        return dataList;
     }
 }
