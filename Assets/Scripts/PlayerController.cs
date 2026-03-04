@@ -23,6 +23,52 @@ public class PlayerController : NetworkBehaviour
     private GameManager gameManager;
     public SpriteManager spriteManager;
 
+    // TODO:
+    // holdObj change to List<NetworkTransform>
+    // - can carry a list of items OR a list of tiles, cannot mix them
+    // - - store a EInteractable.type of list variable, when list length is 0, type = null?
+    // - make the tile smaller when isheld, do this inside tile script
+    // Try remove middle mouse button, always have camera locked
+    // - make sure left and right click register at center of screen
+    // change player sprites to 3d cube object
+    // add name tag to players with steam name
+    // - add it to prefab, check if isOwner, hide prefab from self
+    // stronger gravity, less floaty
+    // items should be rigidbodies stronger throw should be fun
+    // planted seeds dont need to be like minecraft
+    // - throw seeds in a spread (holdObjList.Length % maxThrowAmount), one stalk grows out of each
+    // - - oncollisionenter, physics cast area for tile layermask, if tile.type == dirt, plant
+    // - - - plant() add seed to tile, instantiate produce object, start growing.
+    // - - - must be certain distance from other planted seeds on that tile.
+    // - left click harvest in area, would be better for frames to go directly to holdObj list
+    // - - receive new seeds of same type on good harvest
+    // - - should be satisfying
+    // the world we start in is randomly generated
+    // - messy world
+    // - some types of produce is growing
+    // - does not need to be perfect square or flat
+    // - weeds that give random seeds
+
+
+    // ISSUES:
+    // how do we get the seeds?
+    // - plants give new seeds on successful harvest
+    // - - plant types: wheat, corn, potato, grass, weeds, tomato
+    // - trader
+    // how do we get more blocks?
+    // - compost for dirt?
+    // - - place harvest/weeds/failed harvest in a container?
+    // trader? - big hand
+    // - arrive once a day
+    // - holds a bag that can be filled with produce
+    // - gives back random items depending on value of items given
+    // - - Items: Dirt, Stone, Seeds, Compost Bin, more tile types?
+    // game play cycle?
+    // - sandbox, no death/restart/game end, continuous, incremental, need certain types of produce for upgrades.
+    // - roguelike, daily quota, game end on not met, incremental upgrades.
+    // upgrades?
+    // - yea
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
