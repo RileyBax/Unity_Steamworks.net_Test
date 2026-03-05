@@ -4,13 +4,20 @@ using UnityEngine;
 public class PlayerObjectRenderer : NetworkBehaviour
 {
 
-    private Vector3 prevPos;
-    private Vector3 lookDir;
+    private Vector3 movePos;
     private int updateFrame = 1;
 
     void Start()
     {
-        prevPos = transform.parent.forward * 0.05f;
+        movePos = transform.parent.forward * 0.05f;
+    }
+
+    void LateUpdate()
+    {
+        
+        if(networkManager) UpdateLookDirRPC(movePos);
+        else UpdateLookDir(movePos);
+
     }
 
     [ObserversRpc(runLocally:true, bufferLast:true)]
@@ -33,12 +40,7 @@ public class PlayerObjectRenderer : NetworkBehaviour
         
         movePos.y = 0;
 
-        if(movePos.magnitude > 0.05f){
-
-            if(networkManager) UpdateLookDirRPC(movePos);
-            else UpdateLookDir(movePos);
-
-        }
+        if(movePos.magnitude > 0.05) this.movePos = movePos;
 
     }
 }

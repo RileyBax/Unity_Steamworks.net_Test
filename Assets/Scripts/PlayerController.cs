@@ -111,7 +111,10 @@ public class PlayerController : NetworkBehaviour
         GameObject localPlayerRef = GameObject.Find("LocalPlayer");
         if (localPlayerRef) Destroy(localPlayerRef);
 
-        if(gameManager && isOwner) playerName.value = gameManager.GetSteamName();
+        if(gameManager && isOwner) {
+            playerName.value = gameManager.GetSteamName();
+            nameTag.gameObject.SetActive(false);
+        }
 
         if (isServer && !gameManager.hasLoadedMap)
         {

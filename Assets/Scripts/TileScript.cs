@@ -14,7 +14,7 @@ public class TileScript : HoldableObject
         isHeld = new(false);
         isHeld.onChanged += UpdateCollider;
         type = EInteractable.Type.Tile;
-        holdHeight = 2.0f;
+        holdHeight = 3.0f;
         mr = GetComponent<MeshRenderer>();
         id = new(0);
         id.onChanged += UpdateTexture;
