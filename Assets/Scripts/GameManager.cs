@@ -37,8 +37,15 @@ public class GameManager : NetworkBehaviour
         if (Input.GetKeyDown(KeyCode.L))
         {
 
-            if (networkManager) Instantiate(itemPrefab);
-            else UnityProxy.InstantiateDirectly(itemPrefab);
+            if (networkManager) objectManager.CreateObject(new ObjectData
+            {
+                id = (int) EInteractable.ItemTexture.SeedWheat,
+                position = Vector3.zero,
+                rotation = Quaternion.identity,
+                type = EInteractable.Type.Item,
+                isHeld = false,
+            }, true);
+            else objectManager.CreateNewObject(EInteractable.Type.Item, (int) EInteractable.ItemTexture.SeedWheat, Vector3.zero, Quaternion.identity);
 
         }
 

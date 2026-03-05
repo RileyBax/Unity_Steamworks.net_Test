@@ -6,6 +6,6 @@ public class ObjectAssetData : ScriptableObject
 {
     
     public List<Material> tileMatList;
-    public List<Material> itemMatList;
+    public List<Mesh> itemMeshList;
 
 }

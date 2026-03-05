@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3674157908396952047}
   - component: {fileID: 1111866168490876229}
   - component: {fileID: 7321126773529524195}
+  - component: {fileID: 1586906169684529150}
   m_Layer: 8
   m_Name: Item
   m_TagString: Untagged
@@ -136,6 +137,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac38f66e8e68e954b822af26cfff0bc1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
   savedPrefab: {fileID: 3674157908396952047}
   itemLayer:
     serializedVersion: 2
@@ -143,6 +153,7 @@ MonoBehaviour:
   cubeLayer:
     serializedVersion: 2
     m_Bits: 128
+  objectAssetData: {fileID: 11400000, guid: 4901e95d32dc10e4bad91d9df012805e, type: 2}
 --- !u!64 &7321126773529524195
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -165,3 +176,30 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!54 &1586906169684529150
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3364678056823040543}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 1
+  m_AngularDamping: 1
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 2
+  m_Constraints: 0
+  m_CollisionDetection: 3

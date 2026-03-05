@@ -16,4 +16,6 @@ MonoBehaviour:
   - {fileID: 2100000, guid: 5fd643595cf2fb044aa1b762338ca930, type: 2}
   - {fileID: 2100000, guid: 4cd4f4444fb29b34197c7d1e204c9e86, type: 2}
   - {fileID: 2100000, guid: c30a79a32af92044ba924bccfc6ba6bf, type: 2}
-  itemMatList: []
+  itemMeshList:
+  - {fileID: -5495902117074765545, guid: 9ed9f0c6ae1e3214a87bad3c59684a7e, type: 3}
+  - {fileID: 4711208715938537054, guid: 1ce2820b7c5439941ac32faf57b0f308, type: 3}

@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Timers;
 using PurrNet;
+using Steamworks;
 using TMPro;
 using Unity.Cinemachine;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Composites;
@@ -13,14 +15,14 @@ using UnityEngine.Tilemaps;
 public class PlayerController : NetworkBehaviour
 {
 
-    private float speed = 10.0f;
+    private float speed = 7.5f;
     private GameObject cineCamObj;
     private CinemachineCamera cineCam;
     private CinemachineInputAxisController cineInput;
     private CharacterController characterController;
     public LayerMask playerLayer;
     public LayerMask cubeLayer;
-    private float jumpHeight = 0.75f;
+    private float jumpHeight = 1f;
     private float ySpeed;
     private List<GameObject> holdObj = new List<GameObject>();
     private GameManager gameManager;
@@ -81,14 +83,17 @@ public class PlayerController : NetworkBehaviour
     {
 
         Vector3 moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+
         moveDir = -transform.right * moveDir.x + -transform.forward * moveDir.z;
+        moveDir = Vector3.ClampMagnitude(moveDir, 1.0f);
 
-        bool isGrounded = Physics.CheckSphere(transform.position + new Vector3(0, 0.25f, 0), 0.30f, ~playerLayer);
+        //bool isGrounded = Physics.CheckSphere(transform.position + new Vector3(0, 0.25f, 0), 0.30f, ~playerLayer);
 
 
-        if (!isGrounded) ySpeed += Physics.gravity.y / 7.5f * Time.deltaTime;
+        if (!characterController.isGrounded) ySpeed += Physics.gravity.y / 5f * Time.deltaTime;
+        else ySpeed = Physics.gravity.y / 5f * Time.deltaTime;
 
-        if (Input.GetKeyDown(KeyCode.Space) && isGrounded) ySpeed = jumpHeight;
+        if (Input.GetKeyDown(KeyCode.Space) && characterController.isGrounded) ySpeed = jumpHeight;
 
         moveDir.y = ySpeed;
 
@@ -146,12 +151,20 @@ public class PlayerController : NetworkBehaviour
             PlaceObject(ray);
 
         }
-        else if (Input.GetMouseButton(1))
+        else if (Input.GetMouseButtonDown(1))
         {
 
             Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.value);
 
             if (Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer)) GrabObject(hit);
+
+        }
+        else if (Input.GetMouseButton(1))
+        {
+            
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.value);
+
+           if (Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer)) CheckGrabTimer(hit);
 
         }
 
@@ -163,6 +176,29 @@ public class PlayerController : NetworkBehaviour
             lr.positionCount = 0;
 
         }
+
+    }
+
+    private void CheckGrabTimer(RaycastHit hit)
+    {
+        
+        HoldableObject holdable = hit.collider.gameObject.GetComponent<HoldableObject>();
+
+        if(holdable.type == EInteractable.Type.Tile && grabTimer > 0 && holdable.id != (int) EInteractable.TileTexture.Bedrock && !holdable.isHeld && (holdListType == EInteractable.Type.Tile || holdListType == EInteractable.Type.Null))
+        {
+            grabTimer -= Time.deltaTime;
+            // add point to line renderer every so frames
+            float progress = 1f - (grabTimer / grabTimerMax);
+            DrawTimerCircle(progress);
+            lr.enabled = true;
+        }
+        else
+        {
+            grabTimer = grabTimerMax;
+            lr.enabled = false;
+        }
+
+        if(grabTimer <= 0) GrabObject(hit);
 
     }
 
@@ -185,22 +221,13 @@ public class PlayerController : NetworkBehaviour
         
         HoldableObject holdable = hit.collider.gameObject.GetComponent<HoldableObject>();
 
-        if(holdable.type == EInteractable.Type.Tile && grabTimer > 0 && holdable.id != (int) EInteractable.TileTexture.Bedrock && !holdable.isHeld && (holdListType == EInteractable.Type.Tile || holdListType == EInteractable.Type.Null))
+        if (!holdable.isHeld && (holdable.id != (int) EInteractable.TileTexture.Bedrock || holdable.type == EInteractable.Type.Item) && (holdListType == holdable.type || holdListType == EInteractable.Type.Null))
         {
-            grabTimer -= Time.deltaTime;
-            // add point to line renderer every so frames
-            float progress = 1f - (grabTimer / grabTimerMax);
-            DrawTimerCircle(progress);
-            lr.enabled = true;
-        }
-        else if (!holdable.isHeld && (holdable.id != (int) EInteractable.TileTexture.Bedrock || holdable.type == EInteractable.Type.Item) && (holdListType == holdable.type || holdListType == EInteractable.Type.Null))
-        {
+
+            if(holdable.type == EInteractable.Type.Tile && grabTimer > 0) return;
 
             holdObj.Add(hit.collider.gameObject);
             holdObj[holdObj.Count-1].GetComponent<NetworkTransform>().GiveOwnership(localPlayer);
-
-            if (networkManager) UpdateComponentsRPC(holdObj[holdObj.Count-1].GetComponent<NetworkTransform>(), false);
-            else holdable.col.enabled = false;
 
             holdObjHeight = holdObj[holdObj.Count-1].GetComponent<HoldableObject>().holdHeight;
             holdable.OnPickup(gameObject);
@@ -224,9 +251,6 @@ public class PlayerController : NetworkBehaviour
             holdObj.Add(objList[i]);
             holdObj[holdObj.Count-1].GetComponent<NetworkTransform>().GiveOwnership(localPlayer);
 
-            if (networkManager) UpdateComponentsRPC(holdObj[holdObj.Count-1].GetComponent<NetworkTransform>(), false);
-            else holdable.col.enabled = false;
-
             holdObjHeight = holdObj[holdObj.Count-1].GetComponent<HoldableObject>().holdHeight;
             holdable.OnPickup(gameObject);
 
@@ -243,22 +267,10 @@ public class PlayerController : NetworkBehaviour
 
         if (holdable.OnPlace(ray))
         {
-
-            if (networkManager) UpdateComponentsRPC(holdObj[holdObj.Count-1].GetComponent<NetworkTransform>(), true);
-            else holdable.col.enabled = true;
-
             holdObj.RemoveAt(holdObj.Count-1);
         }
 
         if(holdObj.Count == 0) holdListType = EInteractable.Type.Null;
-
-    }
-
-    [ObserversRpc(runLocally: true, bufferLast: true)]
-    private void UpdateComponentsRPC(NetworkTransform obj, bool action)
-    {
-
-        if (obj) obj.GetComponent<HoldableObject>().col.enabled = action;
 
     }
 
