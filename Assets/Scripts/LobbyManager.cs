@@ -1,6 +1,4 @@
-using System.Collections;
 using PurrNet;
-using PurrNet.Modules;
 using PurrNet.Steam;
 using Steamworks;
 using TMPro;
@@ -85,6 +83,13 @@ public class LobbyManager : MonoBehaviour
         uiButton.SetActive(false);
         uiJoinButton.SetActive(false);
         uiLeaveButton.SetActive(true);
+
+    }
+
+    public string GetSteamName()
+    {
+        
+        return SteamFriends.GetPersonaName();
 
     }
 

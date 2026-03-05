@@ -453,7 +453,7 @@ GameObject:
   - component: {fileID: 141480705}
   - component: {fileID: 141480704}
   - component: {fileID: 141480708}
-  - component: {fileID: 141480709}
+  - component: {fileID: 141480710}
   m_Layer: 0
   m_Name: PurrNet
   m_TagString: Untagged
@@ -533,7 +533,7 @@ MonoBehaviour:
   _playerPrefab: {fileID: 4783148418152674240, guid: 91d9d7a90d6e48a4c83cd9a013a4dde1, type: 3}
   _ignoreNetworkRules: 0
   spawnPoints: []
---- !u!114 &141480709
+--- !u!114 &141480710
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -542,13 +542,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 141480703}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 332e746c3c3253246aacad4d5559f1fb, type: 3}
+  m_Script: {fileID: 11500000, guid: fc64ff707d914a64e95f2ac0bf554c09, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: PurrNet.Runtime::PurrNet.Transports.PurrTransport
-  _masterServer: https://purrtransport.purrservers.com/
-  _roomName: 1a199b614d534a50befd96e314dcfe99
-  _region: australia
-  _host: purrtransport-australia.purrservers.com
+  m_EditorClassIdentifier: PurrNet.Runtime::PurrNet.Transports.UDPTransport
+  _automaticCloudSetups:
+    _adaptToEdgegap: 1
+  _serverPort: 5000
+  _maxConnections: 100
+  _address: 127.0.0.1
   _timeoutInSeconds: 5
   _pollEventsInUpdate: 0
 --- !u!1 &195432864
@@ -1297,6 +1298,63 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -3.16625, y: -4.61002, z: 7.60673}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &686367462
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 686367464}
+  - component: {fileID: 686367463}
+  m_Layer: 0
+  m_Name: ObjectManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &686367463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 686367462}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bbdd4fa89122b647b0a54ffde3abc80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
+  objectPrefabList:
+  - {fileID: 0}
+  - {fileID: 5994450644101454861, guid: 19a85dbd158686e42b3a8a88ee054855, type: 3}
+  - {fileID: 3364678056823040543, guid: 485531f66bfaf734da0bc8a8e24f695e, type: 3}
+--- !u!4 &686367464
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 686367462}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2231,19 +2289,12 @@ MonoBehaviour:
   playerHeldObjectRef: {fileID: 0}
   hasLoadedMap: 0
   tileSaveManager: {fileID: 2078178428}
-  objectPrefabList:
-  - {fileID: 0}
-  - {fileID: 5994450644101454861, guid: 19a85dbd158686e42b3a8a88ee054855, type: 3}
-  - {fileID: 3364678056823040543, guid: 485531f66bfaf734da0bc8a8e24f695e, type: 3}
   gameSave:
     objects: []
     player:
       position: {x: 0, y: 0, z: 0}
       rotation: {x: 0, y: 0, z: 0, w: 0}
-  tileTextures:
-  - {fileID: 2100000, guid: 5fd643595cf2fb044aa1b762338ca930, type: 2}
-  - {fileID: 2100000, guid: 4cd4f4444fb29b34197c7d1e204c9e86, type: 2}
-  itemTextures: []
+  objectManager: {fileID: 686367463}
 --- !u!4 &2078178427
 Transform:
   m_ObjectHideFlags: 0
@@ -2294,3 +2345,4 @@ SceneRoots:
   - {fileID: 654677294}
   - {fileID: 2078178427}
   - {fileID: 1307305378}
+  - {fileID: 686367464}

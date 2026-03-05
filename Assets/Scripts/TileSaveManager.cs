@@ -50,8 +50,6 @@ public class TileSaveManager : NetworkBehaviour
                     type = holdableObject.type,
                     isHeld = holdableObject.isHeld,
                 };
-                
-                if(holdableObject.isHeld) Debug.Log("saved held obj");
 
                 dataList.objects.Add(data);
 

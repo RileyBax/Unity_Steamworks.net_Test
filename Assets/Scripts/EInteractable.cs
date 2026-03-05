@@ -17,6 +17,7 @@ public class EInteractable
         
         Default,
         Dirt,
+        Bedrock,
 
     }
 

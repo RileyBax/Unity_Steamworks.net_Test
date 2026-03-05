@@ -1,6 +1,9 @@
+using System.Collections.Generic;
 using System.Timers;
 using PurrNet;
+using TMPro;
 using Unity.Cinemachine;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Composites;
@@ -19,78 +22,18 @@ public class PlayerController : NetworkBehaviour
     public LayerMask cubeLayer;
     private float jumpHeight = 0.75f;
     private float ySpeed;
-    public GameObject holdObj;
+    private List<GameObject> holdObj = new List<GameObject>();
     private GameManager gameManager;
-    public SpriteManager spriteManager;
     public bool wasServer = false;
     private float holdObjHeight = 2.0f;
-
-    // TODO:
-    // hold to pickup tile? line renderer circle around mouse
-    // holdObj change to List<NetworkTransform>
-    // - can carry a list of items OR a list of tiles, cannot mix them
-    // - - store a EInteractable.type of list variable, when list length is 0, type = null?
-    // - make the tile smaller when isheld and rotate it?, do this inside tile script
-    // - spiral helds items x and z instead of stack
-    // texture type 0 shouldnt be unholdable
-    // Try remove middle mouse button, always have camera locked?
-    // - make sure left and right click register at center of screen
-    // - - add crosshair?
-    // change player sprites to 3d cube object
-    // add name tag to players with steam name
-    // - add it to prefab, check if isOwner, hide prefab from self
-    // stronger gravity, less floaty
-    // items should have stronger throw should be fun, maybe not rigidbodies, remove collision from player
-    // planted seeds dont need to be like minecraft
-    // - throw seeds in a spread (holdObjList.Length % maxThrowAmount), one sprite stalk grows out of each
-    // - - oncollisionenter, physics cast area for tile layermask, if tile.type == dirt, plant
-    // - - - plant() add seed to tile, instantiate produce object, start growing.
-    // - - - must be certain distance from other planted seeds on that tile.
-    // - left click harvest in area, would be better for frames to go directly to holdObj list
-    // - - receive new seeds of same type on good harvest
-    // - - should be satisfying
-    // the world we start in is randomly generated
-    // - messy world
-    // - some types of produce is growing
-    // - does not need to be perfect square or flat
-    // - weeds that give random seeds
-
-
-    // ISSUES:
-    // how do we get the seeds?
-    // - plants give new seeds on successful harvest
-    // - - plant types: wheat, corn, potato, grass, weeds, tomato, carrot
-    // - trader
-    // how do we get more blocks?
-    // - compost for dirt?
-    // - - place harvest/weeds/failed harvest in a container?
-    // - trader
-    // - - maybe miniture version of block?
-    // how does the trader work? - big hand
-    // - arrive once a day
-    // - holds a bag that can be filled with produce
-    // - gives back random items depending on value of items given
-    // - - Items: Dirt, Stone, Seeds, Compost Bin, more tile types?
-    // game play cycle?
-    // - sandbox, no death/restart/game end, continuous, incremental, need certain types of produce for upgrades.
-    // - roguelike, daily quota, game end on not met, incremental upgrades.
-    // upgrades?
-    // - throw amount, stack height, harvest quantity.
-    // how do we store many items?
-    // - just make a big pile of them?
-    // how do we pick up many items?
-    // - hold left click hoovers them up?
-    // whats stopping the player from winning? we need some kind of antagonist/enemy/force.
-    // - plant disease
-    // - growth rate
-    // - pests
-    // - - rabbits and stuff?
-    // - - can pick them up?
-    // - weather effects?
-    // - - strong wind, rain
-    // - we need to have another mechanic, more things to do
-    // - - building?
-    // - - - why
+    private LineRenderer lr;
+    private const float grabTimerMax = 0.25f;
+    private float grabTimer = grabTimerMax;
+    private int segments = 60;
+    private float radius = 0.05f;
+    private EInteractable.Type holdListType = EInteractable.Type.Null;
+    public PlayerObjectRenderer playerObjectRenderer;
+    public TextMeshPro playerName;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -102,12 +45,15 @@ public class PlayerController : NetworkBehaviour
         cineCamObj = GameObject.Find("CinemachineCamera");
         cineCam = cineCamObj.GetComponent<CinemachineCamera>();
         cineInput = cineCamObj.GetComponent<CinemachineInputAxisController>();
-            
+
         if (isOwner || !networkManager) cineCam.Follow = transform;
 
         cineInput.enabled = false;
 
         characterController = GetComponent<CharacterController>();
+
+        lr = GetComponent<LineRenderer>();
+        lr.enabled = false;
 
     }
 
@@ -125,22 +71,24 @@ public class PlayerController : NetworkBehaviour
 
     private void PlayerMove()
     {
-        
+
         Vector3 moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
         moveDir = -transform.right * moveDir.x + -transform.forward * moveDir.z;
 
         bool isGrounded = Physics.CheckSphere(transform.position + new Vector3(0, 0.25f, 0), 0.30f, ~playerLayer);
 
-        
-        if(!isGrounded) ySpeed += Physics.gravity.y / 7.5f * Time.deltaTime;
 
-        if(Input.GetKeyDown(KeyCode.Space) && isGrounded) ySpeed = jumpHeight;
+        if (!isGrounded) ySpeed += Physics.gravity.y / 7.5f * Time.deltaTime;
+
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded) ySpeed = jumpHeight;
 
         moveDir.y = ySpeed;
 
         characterController.Move(moveDir * Time.deltaTime * speed);
 
-        if(transform.position.y < -100) transform.position = new Vector3(0, 10.0f, 0);
+        if (transform.position.y < -100) transform.position = new Vector3(0, 10.0f, 0);
+
+        playerObjectRenderer.SetLookDir(moveDir);
 
     }
 
@@ -150,25 +98,28 @@ public class PlayerController : NetworkBehaviour
 
         enabled = isOwner;
 
-        if(!gameManager) gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
+        if (!gameManager) gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
 
         GameObject localPlayerRef = GameObject.Find("LocalPlayer");
-        if(localPlayerRef) Destroy(localPlayerRef);
+        if (localPlayerRef) Destroy(localPlayerRef);
 
-        if(isServer && !gameManager.hasLoadedMap){
+        if(gameManager) SetPlayerName(gameManager.GetSteamName());
+
+        if (isServer && !gameManager.hasLoadedMap)
+        {
             wasServer = true;
             gameManager.DrawFarm(true);
         }
-        
+
     }
 
     private void CamUpdate()
     {
-        
+
         transform.LookAt(Camera.main.transform.position);
         transform.localEulerAngles = new Vector3(0, transform.localEulerAngles.y, transform.localEulerAngles.z);
 
-        if(Input.GetMouseButton(2)) cineInput.enabled = true;
+        if (Input.GetMouseButton(2)) cineInput.enabled = true;
         else cineInput.enabled = false;
 
     }
@@ -176,20 +127,29 @@ public class PlayerController : NetworkBehaviour
     private void ClickUpdate()
     {
 
-        if (Input.GetMouseButtonDown(0) && holdObj)
+        if (Input.GetMouseButtonDown(0) && holdObj.Count > 0)
         {
-            
+
             Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.value);
 
             PlaceObject(ray);
 
         }
-        else if (Input.GetMouseButtonDown(1) && !holdObj)
+        else if (Input.GetMouseButton(1))
         {
-            
+
             Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.value);
 
-            if(Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer)) GrabObject(hit.collider.gameObject);
+            if (Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer)) GrabObject(hit);
+
+        }
+
+        if (Input.GetMouseButtonUp(1))
+        {
+            
+            grabTimer = grabTimerMax;
+            // reset linerenderer
+            lr.positionCount = 0;
 
         }
 
@@ -198,30 +158,68 @@ public class PlayerController : NetworkBehaviour
     private void HoldObject()
     {
 
-        if (holdObj)
+        for (int i = 0; i < holdObj.Count; i++)
         {
-            
-            holdObj.transform.position = transform.position + new Vector3(0, holdObjHeight, 0);
+                
+            holdObj[i].transform.position = transform.position + new Vector3(0, holdObjHeight + i * holdObj[i].transform.localScale.y, 0);
 
         }
 
     }
 
-    public void GrabObject(GameObject obj)
+    public void GrabObject(RaycastHit hit)
     {
 
-        HoldableObject holdable = obj.GetComponent<HoldableObject>();
+        // this function is shocking
+        
+        HoldableObject holdable = hit.collider.gameObject.GetComponent<HoldableObject>();
 
-        if(!holdable.isHeld && (holdable.id != 0 || holdable.type == EInteractable.Type.Item)){
+        if(holdable.type == EInteractable.Type.Tile && grabTimer > 0 && holdable.id != (int) EInteractable.TileTexture.Bedrock && !holdable.isHeld && (holdListType == EInteractable.Type.Tile || holdListType == EInteractable.Type.Null))
+        {
+            grabTimer -= Time.deltaTime;
+            // add point to line renderer every so frames
+            float progress = 1f - (grabTimer / grabTimerMax);
+            DrawTimerCircle(progress);
+            lr.enabled = true;
+        }
+        else if (!holdable.isHeld && (holdable.id != (int) EInteractable.TileTexture.Bedrock || holdable.type == EInteractable.Type.Item) && (holdListType == holdable.type || holdListType == EInteractable.Type.Null))
+        {
 
-            holdObj = obj;
-            holdObj.GetComponent<NetworkTransform>().GiveOwnership(localPlayer);
+            holdObj.Add(hit.collider.gameObject);
+            holdObj[holdObj.Count-1].GetComponent<NetworkTransform>().GiveOwnership(localPlayer);
 
-            if(networkManager) UpdateComponentsRPC(holdObj.GetComponent<NetworkTransform>(), false);
+            if (networkManager) UpdateComponentsRPC(holdObj[holdObj.Count-1].GetComponent<NetworkTransform>(), false);
             else holdable.col.enabled = false;
 
-            holdObjHeight = holdObj.GetComponent<HoldableObject>().holdHeight;
+            holdObjHeight = holdObj[holdObj.Count-1].GetComponent<HoldableObject>().holdHeight;
             holdable.OnPickup(gameObject);
+
+            grabTimer = grabTimerMax;
+            lr.enabled = false;
+
+            if(holdListType == EInteractable.Type.Null) holdListType = holdable.type;
+
+        }
+
+    }
+
+    public void LoadGrabObject(List<GameObject> objList)
+    {
+
+        for(int i = 0; i < objList.Count; i++){
+
+            HoldableObject holdable = objList[i].GetComponent<HoldableObject>();
+
+            holdObj.Add(objList[i]);
+            holdObj[holdObj.Count-1].GetComponent<NetworkTransform>().GiveOwnership(localPlayer);
+
+            if (networkManager) UpdateComponentsRPC(holdObj[holdObj.Count-1].GetComponent<NetworkTransform>(), false);
+            else holdable.col.enabled = false;
+
+            holdObjHeight = holdObj[holdObj.Count-1].GetComponent<HoldableObject>().holdHeight;
+            holdable.OnPickup(gameObject);
+
+            if(holdListType == EInteractable.Type.Null) holdListType = holdable.type;
 
         }
 
@@ -230,26 +228,57 @@ public class PlayerController : NetworkBehaviour
     private void PlaceObject(Ray ray)
     {
 
-        HoldableObject holdable = holdObj.GetComponent<HoldableObject>();
-        
+        HoldableObject holdable = holdObj[holdObj.Count-1].GetComponent<HoldableObject>();
+
         if (holdable.OnPlace(ray))
         {
 
-            if(networkManager) UpdateComponentsRPC(holdObj.GetComponent<NetworkTransform>(), true);
+            if (networkManager) UpdateComponentsRPC(holdObj[holdObj.Count-1].GetComponent<NetworkTransform>(), true);
             else holdable.col.enabled = true;
 
-            holdObj = null;
+            holdObj.RemoveAt(holdObj.Count-1);
         }
 
-        
+        if(holdObj.Count == 0) holdListType = EInteractable.Type.Null;
 
     }
 
-    [ObserversRpc(runLocally:true, bufferLast:true)]
+    [ObserversRpc(runLocally: true, bufferLast: true)]
     private void UpdateComponentsRPC(NetworkTransform obj, bool action)
     {
 
-        if(obj) obj.GetComponent<HoldableObject>().col.enabled = action;
+        if (obj) obj.GetComponent<HoldableObject>().col.enabled = action;
+
+    }
+
+    private void DrawTimerCircle(float progress) // progress 0 → 1
+    {
+        Vector3 mouseWorld = Camera.main.transform.position + Camera.main.ScreenPointToRay(Input.mousePosition).direction * 1.0f;
+
+        int currentSegments = Mathf.CeilToInt(segments * progress);
+        lr.positionCount = currentSegments + 1;
+
+        float angleStep = 2f * Mathf.PI / segments;
+
+        for (int i = 0; i <= currentSegments; i++)
+        {
+            float angle = i * angleStep;
+
+            float x = Mathf.Cos(angle) * radius;
+            float y = Mathf.Sin(angle) * radius;
+
+            Vector3 offset = Camera.main.transform.right * x + Camera.main.transform.up * y;
+
+            lr.SetPosition(i, mouseWorld + offset);
+        }
+    }
+
+    [ObserversRpc(runLocally:true)]
+    private void SetPlayerName(string name)
+    {
+        
+        playerName.text = name;
+        if(isOwner) playerName.transform.parent.gameObject.SetActive(false);
 
     }
 

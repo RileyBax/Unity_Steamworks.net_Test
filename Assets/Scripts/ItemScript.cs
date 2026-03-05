@@ -10,19 +10,23 @@ public class ItemScript : HoldableObject
     public LayerMask itemLayer;
     public LayerMask cubeLayer;
     private float throwForce = 10.0f;
+    private bool clientIsHeld;
 
     void Awake()
     {
         col = GetComponent<MeshCollider>();
-        isHeld = false;
+        isHeld = new(false);
+        isHeld.onChanged += UpdateCollider;
         type = EInteractable.Type.Item;
         holdHeight = 3.0f;
+        id = new();
+        clientIsHeld = false;
     }
 
     void Update()
     {
 
-        if(isHeld) return;
+        if(clientIsHeld) return;
 
         // Ground check
         bool isGrounded = Physics.CheckSphere(
@@ -51,7 +55,8 @@ public class ItemScript : HoldableObject
     public override void OnPickup(GameObject player)
     {
         
-        isHeld = true;
+        if(networkManager) SetHeldRPC(true);
+        else isHeld.value = true;
         velocity = Vector3.zero;
         isThrown = false;
 
@@ -59,7 +64,8 @@ public class ItemScript : HoldableObject
 
     public override bool OnPlace(Ray ray)
     {
-        isHeld = false;
+
+        clientIsHeld = false;
 
         if (Physics.Raycast(ray, out RaycastHit hit, 100f, cubeLayer))
         {
@@ -72,7 +78,19 @@ public class ItemScript : HoldableObject
         }
 
         isThrown = true;
+
+        if(networkManager) SetHeldRPC(false);
+        else isHeld.value = false;
+
         return true;
+    }
+
+    public void UpdateCollider(bool newValue)
+    {
+        
+        clientIsHeld = newValue;
+        col.enabled = !newValue;
+
     }
 
 }
