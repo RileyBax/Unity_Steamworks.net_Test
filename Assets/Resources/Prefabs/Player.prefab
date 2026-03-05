@@ -271,7 +271,7 @@ MonoBehaviour:
     m_Bits: 384
   wasServer: 0
   playerObjectRenderer: {fileID: 8431590642548551084}
-  playerName: {fileID: 2273642269498475137}
+  nameTag: {fileID: 2273642269498475137}
 --- !u!114 &4502905241308416577
 MonoBehaviour:
   m_ObjectHideFlags: 0

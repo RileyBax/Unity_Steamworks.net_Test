@@ -33,7 +33,15 @@ public class PlayerController : NetworkBehaviour
     private float radius = 0.05f;
     private EInteractable.Type holdListType = EInteractable.Type.Null;
     public PlayerObjectRenderer playerObjectRenderer;
-    public TextMeshPro playerName;
+    public TextMeshPro nameTag;
+    private SyncVar<string> playerName = new(ownerAuth:true);
+
+    void Awake()
+    {
+        
+        playerName.onChanged += SetPlayerName;
+
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -103,7 +111,7 @@ public class PlayerController : NetworkBehaviour
         GameObject localPlayerRef = GameObject.Find("LocalPlayer");
         if (localPlayerRef) Destroy(localPlayerRef);
 
-        if(gameManager) SetPlayerName(gameManager.GetSteamName());
+        if(gameManager && isOwner) playerName.value = gameManager.GetSteamName();
 
         if (isServer && !gameManager.hasLoadedMap)
         {
@@ -273,12 +281,10 @@ public class PlayerController : NetworkBehaviour
         }
     }
 
-    [ObserversRpc(runLocally:true)]
-    private void SetPlayerName(string name)
+    private void SetPlayerName(string newValue)
     {
         
-        playerName.text = name;
-        if(isOwner) playerName.transform.parent.gameObject.SetActive(false);
+        nameTag.text = newValue;
 
     }
 
