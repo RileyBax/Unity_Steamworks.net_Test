@@ -6,6 +6,9 @@ public class ObjectAssetData : ScriptableObject
 {
     
     public List<Material> tileMatList;
-    public List<Mesh> itemMeshList;
+    public List<Mesh> seedMeshList;
+    public List<Mesh> produceMeshList;
+    public List<GameObject> prefabList;
+    public List<Sprite> plantSpriteList;
 
 }

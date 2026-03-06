@@ -9,6 +9,8 @@ public class EInteractable
         Null,
         Tile,
         Item,
+        Plant,
+        Produce,
 
     }
 
@@ -16,17 +18,32 @@ public class EInteractable
     {
         
         Default,
-        Dirt,
         Bedrock,
+        Dirt,
+        Stone,
 
     }
 
-    public enum ItemTexture
+    public enum SeedTexture
     {
         
         Default,
         SeedWheat,
 
+    }
+
+    public enum PlantObject
+    {
+        
+        Default,
+        Wheat,
+
+    }
+
+    public enum ProduceTexture
+    {
+        Default,
+        WheatObject,
     }
 
 }

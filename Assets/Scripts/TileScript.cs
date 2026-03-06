@@ -54,7 +54,7 @@ public class TileScript : HoldableObject
         if(networkManager) SetHeldRPC(true);
         else isHeld.value = true;
 
-        transform.localScale *= 0.5f;
+        transform.localScale = new Vector3(GridUtil.gridSize / 2, GridUtil.gridSize / 2, GridUtil.gridSize / 2);
 
     }
 
@@ -68,7 +68,7 @@ public class TileScript : HoldableObject
             transform.position = placePos;
             if(networkManager) SetHeldRPC(false);
             else isHeld.value = false;
-            transform.localScale *= 2f;
+            transform.localScale = new Vector3(GridUtil.gridSize, GridUtil.gridSize, GridUtil.gridSize);
 
             return true;
 

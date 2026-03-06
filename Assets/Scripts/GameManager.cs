@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using PurrNet;
-using PurrNet.Transports;
 using TMPro;
-using Unity.VisualScripting;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class GameManager : NetworkBehaviour
@@ -39,13 +37,13 @@ public class GameManager : NetworkBehaviour
 
             if (networkManager) objectManager.CreateObject(new ObjectData
             {
-                id = (int) EInteractable.ItemTexture.SeedWheat,
+                id = (int) EInteractable.SeedTexture.SeedWheat,
                 position = Vector3.zero,
                 rotation = Quaternion.identity,
                 type = EInteractable.Type.Item,
                 isHeld = false,
             }, true);
-            else objectManager.CreateNewObject(EInteractable.Type.Item, (int) EInteractable.ItemTexture.SeedWheat, Vector3.zero, Quaternion.identity);
+            else objectManager.CreateNewObject(EInteractable.Type.Item, (int) EInteractable.SeedTexture.SeedWheat, Vector3.zero, Quaternion.identity);
 
         }
 
@@ -110,6 +108,13 @@ public class GameManager : NetworkBehaviour
                 hasLoadedMap = true;
             }
 
+            foreach(PlantData plant in gameSave.plants)
+            {
+                
+                objectManager.CreatePlant(plant, isOnline);
+
+            }
+
             foreach (ObjectData obj in gameSave.objects)
             {
 
@@ -150,18 +155,55 @@ public class GameManager : NetworkBehaviour
             for (int z = -sq / 2; z < sq - sq / 2; z++)
             {
 
-                if(x != 0 || z != 0) {
-                    objectManager.CreateNewObject(
-                        EInteractable.Type.Tile, 
-                        (int) EInteractable.TileTexture.Dirt, 
-                        GridUtil.SnapToGrid(new Vector3(x * 2, -2, z * 2)), 
-                        Quaternion.identity);
-                }
-                else {
+                if(x == 0 && z == 0) {
                     objectManager.CreateNewObject(EInteractable.Type.Tile, 
                     (int) EInteractable.TileTexture.Bedrock, 
                     GridUtil.SnapToGrid(new Vector3(x * 2, -2, z * 2)), 
                     Quaternion.identity);
+                }
+                else {
+                    
+                    int absX = math.abs(x);
+                    int absZ = math.abs(z);
+
+                    float tileChance = 1f;
+
+                    tileChance -= (float) (absX * 0.05f + absZ * 0.05);
+
+                    int texture = UnityEngine.Random.Range(2, 4);
+                    int yOffset = 0;
+
+                    if(UnityEngine.Random.Range(0f, 1f) < 1f - tileChance) yOffset = UnityEngine.Random.Range(-1, 2);
+
+                    if(UnityEngine.Random.Range(0f, 1f) < tileChance)
+                    {
+                        
+                        GameObject newTile = objectManager.CreateNewObject(EInteractable.Type.Tile, 
+                        texture, 
+                        GridUtil.SnapToGrid(new Vector3(x * 2, -2 + yOffset, z * 2)), 
+                        Quaternion.identity);
+
+                        if(texture == (int)EInteractable.TileTexture.Dirt && UnityEngine.Random.Range(1, 4) == 1)
+                        {
+                            
+                            for(int i = 0; i < UnityEngine.Random.Range(1, 3); i++){
+
+                                objectManager.CreatePlant(new PlantData
+                                {
+                                    id = (int) EInteractable.PlantObject.Wheat, // make random here
+                                    position = newTile.transform.position + new Vector3(UnityEngine.Random.Range(-1f, 1f), 1.0f, UnityEngine.Random.Range(-1f, 1f)),
+                                    rotation = Quaternion.identity,
+                                    type = EInteractable.Type.Plant,
+                                    isGrown = true,
+                                    growTime = 10f,
+                                }, false);
+
+                            }
+
+                        }
+
+                    }
+
                 }
 
             }
@@ -230,18 +272,41 @@ public class GameManager : NetworkBehaviour
             if (leaverObject[i].owner == player && holdableObject != null && isHost)
             {
 
-                Vector3 setPos = leaverObject[i].transform.position;
-                if(holdableObject.type == EInteractable.Type.Tile) setPos = GridUtil.SnapToGrid(leaverObject[i].transform.position);
+                if(holdableObject.type != EInteractable.Type.Plant){
 
-                ObjectData objectData = new ObjectData{
-                    id = holdableObject.id, 
-                    position = setPos, 
-                    rotation = leaverObject[i].transform.rotation, 
-                    type = holdableObject.type,
-                    isHeld = false
+                    Vector3 setPos = leaverObject[i].transform.position;
+                    if(holdableObject.type == EInteractable.Type.Tile) setPos = GridUtil.SnapToGrid(leaverObject[i].transform.position);
+
+                    ObjectData objectData = new ObjectData{
+                        id = holdableObject.id, 
+                        position = setPos, 
+                        rotation = leaverObject[i].transform.rotation, 
+                        type = holdableObject.type,
+                        isHeld = false
                     };
 
-                objectManager.CreateObject(objectData, true);
+                    objectManager.CreateObject(objectData, true);
+
+                }
+                else
+                {
+                    
+                    PlantController plantController = leaverObject[i].GetComponent<PlantController>();
+
+                    PlantData plantData = new PlantData
+                    {
+                        id = holdableObject.id,
+                        position = holdableObject.transform.position,
+                        rotation = holdableObject.transform.rotation,
+                        type = holdableObject.type,
+                        isGrown = plantController.isGrown,
+                        growTime = plantController.growTime
+                        
+                    };
+
+                    objectManager.CreatePlant(plantData, true);
+
+                }
 
                 count++;
 

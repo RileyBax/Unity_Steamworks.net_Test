@@ -14,8 +14,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ObjectAssetData1
   tileMatList:
   - {fileID: 2100000, guid: 5fd643595cf2fb044aa1b762338ca930, type: 2}
-  - {fileID: 2100000, guid: 4cd4f4444fb29b34197c7d1e204c9e86, type: 2}
   - {fileID: 2100000, guid: c30a79a32af92044ba924bccfc6ba6bf, type: 2}
-  itemMeshList:
-  - {fileID: -5495902117074765545, guid: 9ed9f0c6ae1e3214a87bad3c59684a7e, type: 3}
+  - {fileID: 2100000, guid: 4cd4f4444fb29b34197c7d1e204c9e86, type: 2}
+  - {fileID: 2100000, guid: 160c00317ca49294ca7c3fa1940d1f7f, type: 2}
+  seedMeshList:
+  - {fileID: 0}
   - {fileID: 4711208715938537054, guid: 1ce2820b7c5439941ac32faf57b0f308, type: 3}
+  produceMeshList:
+  - {fileID: 0}
+  - {fileID: 10206, guid: 0000000000000000e000000000000000, type: 0}
+  prefabList:
+  - {fileID: 0}
+  - {fileID: 5994450644101454861, guid: 19a85dbd158686e42b3a8a88ee054855, type: 3}
+  - {fileID: 3364678056823040543, guid: 485531f66bfaf734da0bc8a8e24f695e, type: 3}
+  - {fileID: 3789304350992211682, guid: 2bcf79563450116489158041004f0f4a, type: 3}
+  - {fileID: 3364678056823040543, guid: 9424df7eb12e6ba49a7aa99c7ff22c83, type: 3}
+  plantSpriteList:
+  - {fileID: 0}
+  - {fileID: -1576255722, guid: cb6ae31067259954a80c990383c9fd1f, type: 3}

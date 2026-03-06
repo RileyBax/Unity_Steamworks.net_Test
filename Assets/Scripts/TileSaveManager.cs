@@ -34,7 +34,26 @@ public class TileSaveManager : NetworkBehaviour
 
         foreach (var IObject in sceneObjects)
         {
-            if(IObject.GetComponent<HoldableObject>()){
+            if (IObject.GetComponent<PlantController>())
+            {
+
+                PlantController plantController = IObject.GetComponent<PlantController>();
+                HoldableObject holdableObject = IObject.GetComponent<HoldableObject>();
+
+                PlantData data = new PlantData
+                {
+                    id = holdableObject.id,
+                    position = holdableObject.transform.position,
+                    rotation = holdableObject.transform.rotation,
+                    type = holdableObject.type,
+                    isGrown = plantController.isGrown,
+                    growTime = plantController.growTime,
+                };
+
+                dataList.plants.Add(data);
+
+            }
+            else if(IObject.GetComponent<HoldableObject>()){
 
                 HoldableObject holdableObject = IObject.GetComponent<HoldableObject>();
 

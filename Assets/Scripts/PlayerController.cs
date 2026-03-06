@@ -22,6 +22,7 @@ public class PlayerController : NetworkBehaviour
     private CharacterController characterController;
     public LayerMask playerLayer;
     public LayerMask cubeLayer;
+    public LayerMask plantLayer;
     private float jumpHeight = 1f;
     private float ySpeed;
     private List<GameObject> holdObj = new List<GameObject>();
@@ -37,6 +38,7 @@ public class PlayerController : NetworkBehaviour
     public PlayerObjectRenderer playerObjectRenderer;
     public TextMeshPro nameTag;
     private SyncVar<string> playerName = new(ownerAuth:true);
+    private int placeAmount = 1;
 
     void Awake()
     {
@@ -87,13 +89,13 @@ public class PlayerController : NetworkBehaviour
         moveDir = -transform.right * moveDir.x + -transform.forward * moveDir.z;
         moveDir = Vector3.ClampMagnitude(moveDir, 1.0f);
 
-        //bool isGrounded = Physics.CheckSphere(transform.position + new Vector3(0, 0.25f, 0), 0.30f, ~playerLayer);
+        bool isGrounded = Physics.CheckSphere(transform.position + new Vector3(0, 0.25f, 0), 0.30f, ~playerLayer);
 
 
-        if (!characterController.isGrounded) ySpeed += Physics.gravity.y / 5f * Time.deltaTime;
-        else ySpeed = Physics.gravity.y / 5f * Time.deltaTime;
+        if (!isGrounded) ySpeed += Physics.gravity.y / 5f * Time.deltaTime;
+        //else ySpeed = Physics.gravity.y / 5f * Time.deltaTime;
 
-        if (Input.GetKeyDown(KeyCode.Space) && characterController.isGrounded) ySpeed = jumpHeight;
+        if (Input.GetKeyDown(KeyCode.Space) && isGrounded) ySpeed = jumpHeight;
 
         moveDir.y = ySpeed;
 
@@ -143,7 +145,15 @@ public class PlayerController : NetworkBehaviour
     private void ClickUpdate()
     {
 
-        if (Input.GetMouseButtonDown(0) && holdObj.Count > 0)
+        if(Input.GetMouseButtonDown(0) && holdObj.Count == 0)
+        {
+            
+            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.value);
+
+            if (Physics.Raycast(ray, out RaycastHit hit, 100.0f, cubeLayer)) Harvest(hit);
+
+        }
+        else if (Input.GetMouseButtonDown(0) && holdObj.Count > 0)
         {
 
             Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.value);
@@ -202,16 +212,73 @@ public class PlayerController : NetworkBehaviour
 
     }
 
-    private void HoldObject()
+    private void Harvest(RaycastHit hit)
     {
-
-        for (int i = 0; i < holdObj.Count; i++)
+        
+        RaycastHit[] hits = Physics.SphereCastAll(hit.point, 0.25f, Vector3.up, 0f, plantLayer);
+        Debug.Log(hits.Length);
+        foreach (RaycastHit hitObj in hits)
         {
-                
-            holdObj[i].transform.position = transform.position + new Vector3(0, holdObjHeight + i * holdObj[i].transform.localScale.y, 0);
+            
+            PlantController plantController = hitObj.collider.GetComponent<PlantController>();
+
+            plantController.HarvestPlant();
 
         }
 
+    }
+
+    private void HoldObject()
+    {
+
+        if(holdListType == EInteractable.Type.Tile){
+
+            for (int i = 0; i < holdObj.Count; i++)
+            {
+                    
+                holdObj[i].transform.position = transform.position + new Vector3(0, holdObjHeight + i * holdObj[i].transform.localScale.y, 0);
+
+
+            }
+
+        }
+        else if(holdListType == EInteractable.Type.Item || holdListType == EInteractable.Type.Produce)
+        {
+            
+            for (int i = 0; i < holdObj.Count; i++)
+            {
+
+                Vector2 pos = GetSpiralPosition(i);
+
+                holdObj[i].transform.position = transform.position + new Vector3(pos.x / 5f, holdObjHeight - (math.abs(pos.x) * 0.05f + math.abs(pos.y) * 0.05f), pos.y / 5f);
+
+            }
+
+        }
+
+    }
+
+    Vector2Int GetSpiralPosition(int index)
+    {
+        if (index == 0)
+            return Vector2Int.zero;
+
+        int layer = Mathf.CeilToInt((Mathf.Sqrt(index + 1) - 1) / 2);
+        int legLength = layer * 2;
+        int legStart = (2 * layer - 1) * (2 * layer - 1);
+
+        int offset = index - legStart;
+
+        if (offset < legLength)
+            return new Vector2Int(layer, -layer + 1 + offset);
+
+        if (offset < legLength * 2)
+            return new Vector2Int(layer - 1 - (offset - legLength), layer);
+
+        if (offset < legLength * 3)
+            return new Vector2Int(-layer, layer - 1 - (offset - legLength * 2));
+
+        return new Vector2Int(-layer + 1 + (offset - legLength * 3), -layer);
     }
 
     public void GrabObject(RaycastHit hit)
@@ -221,7 +288,7 @@ public class PlayerController : NetworkBehaviour
         
         HoldableObject holdable = hit.collider.gameObject.GetComponent<HoldableObject>();
 
-        if (!holdable.isHeld && (holdable.id != (int) EInteractable.TileTexture.Bedrock || holdable.type == EInteractable.Type.Item) && (holdListType == holdable.type || holdListType == EInteractable.Type.Null))
+        if (!holdable.isHeld && (holdable.id != (int) EInteractable.TileTexture.Bedrock || holdable.type == EInteractable.Type.Item || holdable.type == EInteractable.Type.Produce) && (holdListType == holdable.type || holdListType == EInteractable.Type.Null))
         {
 
             if(holdable.type == EInteractable.Type.Tile && grabTimer > 0) return;

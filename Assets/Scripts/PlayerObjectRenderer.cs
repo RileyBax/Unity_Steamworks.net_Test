@@ -4,12 +4,19 @@ using UnityEngine;
 public class PlayerObjectRenderer : NetworkBehaviour
 {
 
-    private Vector3 movePos;
+    private SyncVar<Vector3> movePos = new(ownerAuth:true);
     private int updateFrame = 1;
 
     void Start()
     {
-        movePos = transform.parent.forward * 0.05f;
+        movePos.value = transform.parent.forward * 0.05f;
+    }
+
+    protected override void OnSpawned()
+    {
+        base.OnSpawned();
+
+        enabled = isOwner;
     }
 
     void LateUpdate()
@@ -40,7 +47,7 @@ public class PlayerObjectRenderer : NetworkBehaviour
         
         movePos.y = 0;
 
-        if(movePos.magnitude > 0.05) this.movePos = movePos;
+        if(movePos.magnitude > 0.05) this.movePos.value = movePos;
 
     }
 }

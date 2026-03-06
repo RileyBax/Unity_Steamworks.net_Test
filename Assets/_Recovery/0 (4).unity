@@ -2287,7 +2287,6 @@ MonoBehaviour:
   hasLoadedMap: 0
   tileSaveManager: {fileID: 2078178428}
   gameSave:
-    plants: []
     objects: []
     player:
       position: {x: 0, y: 0, z: 0}

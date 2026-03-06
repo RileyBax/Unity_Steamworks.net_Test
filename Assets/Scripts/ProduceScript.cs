@@ -1,13 +1,10 @@
-using System.Runtime.CompilerServices;
-using NUnit.Framework;
 using PurrNet;
 using UnityEngine;
 
-public class ItemScript : HoldableObject
+public class ProduceScript : HoldableObject
 {
-
-    public NetworkTransform savedPrefab;
-    private bool isThrown = false;
+public NetworkTransform savedPrefab;
+    private bool isThrown;
     private Vector3 velocity;
     public LayerMask itemLayer;
     public LayerMask cubeLayer;
@@ -23,7 +20,7 @@ public class ItemScript : HoldableObject
         col = GetComponent<MeshCollider>();
         isHeld = new(false);
         isHeld.onChanged += UpdateCollider;
-        type = EInteractable.Type.Item;
+        type = EInteractable.Type.Produce;
         holdHeight = 3.0f;
         id = new(0);
         id.onChanged += UpdateMesh;
@@ -31,19 +28,19 @@ public class ItemScript : HoldableObject
         rb = GetComponent<Rigidbody>();
         meshFilter = GetComponent<MeshFilter>();
         col.convex = true;
-        isPlanted = false;
+
     }
 
     public override void OnPickup(GameObject player)
     {
-
-        if (networkManager) SetHeldRPC(true);
+        
+        if(networkManager) SetHeldRPC(true);
         else isHeld.value = true;
 
         velocity = Vector3.zero;
         isThrown = false;
-        rb.constraints = RigidbodyConstraints.FreezeAll;
         SetCollider(false);
+        rb.constraints = RigidbodyConstraints.FreezeAll;
 
     }
 
@@ -68,7 +65,7 @@ public class ItemScript : HoldableObject
 
         isThrown = true;
 
-        if (networkManager) SetHeldRPC(false);
+        if(networkManager) SetHeldRPC(false);
         else isHeld.value = false;
 
         return true;
@@ -84,7 +81,7 @@ public class ItemScript : HoldableObject
 
     public void UpdateCollider(bool newValue)
     {
-
+        
         clientIsHeld = newValue;
 
     }
@@ -92,66 +89,34 @@ public class ItemScript : HoldableObject
     [ServerRpc]
     public override void SetDataRPC(int ETexture)
     {
-
+        
         id.value = ETexture;
 
     }
 
     public override void SetData(int ETexture)
     {
-
+        
         id.value = ETexture;
-
+        
     }
 
     public void UpdateMesh(int newValue)
     {
 
-        meshFilter.mesh = objectAssetData.seedMeshList[newValue];
+        meshFilter.mesh = objectAssetData.produceMeshList[newValue];
         col.sharedMesh = meshFilter.mesh;
 
     }
 
-    private void PlantSelf(Vector3 plantPos)
+    public void HarvestForce()
     {
+        
+        Vector3 dir = Vector3.up + new Vector3(Random.Range(-0.5f, 0.5f), 0, Random.Range(-0.5f, 0.5f));
+        Vector3 rot = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f));
 
-
-
-        ObjectManager objectManager = GameObject.Find("ObjectManager").GetComponent<ObjectManager>(); // dont like this
-
-        bool isOnline = networkManager ? true : false; // this probably wont work
-
-        objectManager.CreatePlant(new PlantData
-        {
-            id = id,
-            position = plantPos,
-            rotation = Quaternion.identity,
-            type = EInteractable.Type.Plant,
-            isGrown = false,
-            growTime = 10f, // this needs to be changed for differing grow times
-        }, isOnline);
-
-        Destroy(gameObject);
-
-
-    }
-
-    void OnCollisionEnter(Collision collision)
-    {
-
-        if (Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, 0.5f, cubeLayer) && isThrown)
-        {
-
-            HoldableObject holdable = hit.collider.GetComponent<HoldableObject>();
-            
-            if (holdable.id == (int)EInteractable.TileTexture.Dirt && hit.normal == Vector3.up && !isPlanted)
-            {
-
-                isPlanted = true;
-                PlantSelf(hit.point);
-            }
-
-        }
+        rb.AddForce(dir * 4f, ForceMode.Impulse);
+        rb.AddTorque(rot * 10f);
 
     }
 

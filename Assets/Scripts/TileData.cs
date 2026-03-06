@@ -14,8 +14,23 @@ public class ObjectData
 }
 
 [Serializable]
+public class PlantData
+{
+    
+    public int id;
+    public Vector3 position;
+    public Quaternion rotation;
+    public EInteractable.Type type;
+    public bool isGrown;
+    public float growTime;
+
+
+}
+
+[Serializable]
 public class SaveData
 {
+    public List<PlantData> plants = new List<PlantData>();
     public List<ObjectData> objects = new List<ObjectData>();
     public PlayerData player;
     
